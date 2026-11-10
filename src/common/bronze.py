@@ -16,15 +16,16 @@ from pyspark.sql import functions as F
 from src.common.schemas import CLICK_ACTIONS, REQUIRED_FIELDS, SCHEMAS
 
 
-def _validity(topic: str) -> Column:
-    req = [F.col(f"j.{c}").isNotNull() for c in REQUIRED_FIELDS[topic]]
-    rules = req + [F.col("_ts").isNotNull()]
+def validity(topic: str, j: str = "j", ts: str = "_ts") -> Column:
+    """Boolean rule set for one topic; `j` is the parsed struct column, `ts` the parsed timestamp."""
+    req = [F.col(f"{j}.{c}").isNotNull() for c in REQUIRED_FIELDS[topic]]
+    rules = req + [F.col(ts).isNotNull()]
     if topic == "clicks":
-        rules.append(F.col("j.action").isin(*CLICK_ACTIONS))
+        rules.append(F.col(f"{j}.action").isin(*CLICK_ACTIONS))
     elif topic == "orders":
-        rules += [F.col("j.total") >= 0, F.size("j.items") > 0]
+        rules += [F.col(f"{j}.total") >= 0, F.size(f"{j}.items") > 0]
     elif topic == "reviews":
-        rules.append(F.col("j.rating").between(1, 5))
+        rules.append(F.col(f"{j}.rating").between(1, 5))
     return reduce(lambda a, b: a & b, rules)
 
 
@@ -35,7 +36,7 @@ def parse(raw: DataFrame, topic: str, source: str) -> tuple[DataFrame, DataFrame
             raw = raw.withColumn(c, F.lit(None).cast("int" if c == "kafka_partition" else "long"))
     df = (raw.withColumn("j", F.from_json("value", schema))
              .withColumn("_ts", F.to_timestamp("j.event_time"))
-             .withColumn("_ok", F.coalesce(_validity(topic), F.lit(False))))
+             .withColumn("_ok", F.coalesce(validity(topic), F.lit(False))))
 
     fields = [f.name for f in schema.fields if f.name != "event_time"]
     good = (df.where("_ok")

@@ -172,6 +172,14 @@ def session_events(world: World, now: dt.datetime, rng: random.Random) -> list[t
     # reviews were only ~0.1% of events (first test run), too sparse for per-minute sentiment.
     if rng.random() < 0.03:
         out.append(("reviews", review_event(c, world.pick_product(rng), t, rng)))
+    # The session is emitted all at once, so shift it to END at `now`. Timestamps stepped
+    # forward from `now` put events up to ~20 s in the future (TEST_LOG T03), which made
+    # measured freshness negative.
+    shift = t - now
+    if shift.total_seconds() > 0:
+        for _topic, ev in out:
+            ts = dt.datetime.fromisoformat(ev["event_time"].replace("Z", "+00:00")) - shift
+            ev["event_time"] = iso(ts)
     return out
 
 
