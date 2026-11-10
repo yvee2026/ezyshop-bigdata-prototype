@@ -1,0 +1,13 @@
+# Spark processing image. Spark 3.5 is tested with numpy 1.x / pandas 2.x, so those stay on 1.x/2.x.
+pyspark==3.5.3
+delta-spark==3.2.1
+numpy==1.26.4
+pandas==2.2.3
+pyarrow==17.0.0
+vaderSentiment==3.3.2
+pymongo==4.18.3
+psycopg2-binary==2.9.13
+confluent-kafka==2.15.1
+Faker==30.8.2
+matplotlib==3.9.2
+pytest==9.1.1

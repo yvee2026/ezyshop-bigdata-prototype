@@ -1,0 +1,23 @@
+# secrets / local config
+.env
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+*.egg-info/
+
+# spark / local runtime
+spark-warehouse/
+metastore_db/
+derby.log
+/tmp/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
+
+# node (only used to render the diagram)
+node_modules/

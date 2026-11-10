@@ -1,0 +1,203 @@
+# EzyShop Big Data prototype: laptop-scale Lambda architecture.
+# All images are official/upstream and multi-arch (linux/arm64 + linux/amd64).
+name: ezyshop
+
+x-app-env: &app-env
+  env_file: .env
+
+services:
+  # ---------------------------------------------------------------- ingestion
+  kafka:
+    image: apache/kafka:3.8.1
+    hostname: kafka
+    environment:
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID}
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:${HOST_PORT_KAFKA}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_NUM_PARTITIONS: ${KAFKA_PARTITIONS}
+      KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx768m
+    ports:
+      - "${HOST_PORT_KAFKA}:9094"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 15s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  kafka-init:
+    image: apache/kafka:3.8.1
+    profiles: ["init"]          # one-shot; run by `make init`
+    depends_on:
+      kafka: { condition: service_healthy }
+    env_file: .env
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        for t in $$TOPIC_CLICKS $$TOPIC_ORDERS $$TOPIC_REVIEWS; do
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists \
+            --topic "$$t" --partitions "$$KAFKA_PARTITIONS" --replication-factor 1
+        done
+        /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --describe | grep -E '^Topic:' || true
+    restart: "no"
+
+  # ---------------------------------------------------------------- object storage (data lake)
+  # SeaweedFS replaces MinIO: MinIO's images are no longer pulled anonymously from Docker Hub/Quay
+  # (see docs/TEST_LOG.md T01). Both expose the same S3 API that Spark's S3A connector uses.
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48
+    hostname: seaweedfs
+    env_file: .env
+    entrypoint: ["/bin/sh", "/storage-entrypoint.sh"]
+    ports:
+      - "${HOST_PORT_S3}:8333"
+      - "${HOST_PORT_S3_MASTER}:9333"
+    volumes:
+      - lake-data:/data
+      - ./docker/storage/entrypoint.sh:/storage-entrypoint.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9333/cluster/status && wget -q -S -O /dev/null http://127.0.0.1:8333/ 2>&1 | grep -qE 'HTTP/1.1 (200|403)'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    restart: unless-stopped
+
+  storage-init:
+    image: chrislusf/seaweedfs:4.48
+    profiles: ["init"]          # one-shot; run by `make init`
+    depends_on:
+      seaweedfs: { condition: service_healthy }
+    env_file: .env
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        if echo "s3.bucket.list" | weed shell -master=seaweedfs:9333 2>/dev/null | grep -q "$$LAKE_BUCKET"; then
+          echo "bucket $$LAKE_BUCKET already exists"
+        else
+          echo "s3.bucket.create -name $$LAKE_BUCKET" | weed shell -master=seaweedfs:9333
+          echo "bucket $$LAKE_BUCKET created"
+        fi
+        echo "s3.bucket.list" | weed shell -master=seaweedfs:9333
+    restart: "no"
+
+  # ---------------------------------------------------------------- serving + system of record
+  mongo:
+    image: mongo:7.0.43
+    hostname: mongo
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.5"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "${HOST_PORT_MONGO}:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16.14
+    hostname: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${HOST_PORT_POSTGRES}:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- processing
+  # Idle container; jobs run via `docker compose exec spark python -m ...` (see Makefile).
+  spark:
+    build: { context: ., dockerfile: docker/spark/Dockerfile }
+    image: ezyshop/spark:0.1
+    hostname: spark
+    <<: *app-env
+    ports:
+      - "${HOST_PORT_SPARK_UI}:4040"
+    volumes:
+      - ./:/app
+    depends_on:
+      kafka: { condition: service_healthy }
+      seaweedfs: { condition: service_healthy }
+      mongo: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import pyspark, delta, vaderSentiment"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- sources
+  generator:
+    build: { context: ., dockerfile: docker/generator/Dockerfile }
+    image: ezyshop/generator:0.1
+    <<: *app-env
+    volumes:
+      - ./src:/app/src:ro
+    depends_on:
+      kafka: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import confluent_kafka, faker"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- users
+  dashboard:
+    build: { context: ., dockerfile: docker/dashboard/Dockerfile }
+    image: ezyshop/dashboard:0.1
+    <<: *app-env
+    ports:
+      - "${HOST_PORT_DASHBOARD}:8501"
+    volumes:
+      - ./src:/app/src:ro
+    depends_on:
+      mongo: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=4)"]
+      interval: 15s
+      timeout: 6s
+      retries: 8
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  kafka-data:
+  lake-data:
+  mongo-data:
+  pg-data:
