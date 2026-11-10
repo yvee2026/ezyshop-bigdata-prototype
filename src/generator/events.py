@@ -62,14 +62,22 @@ class World:
                      self.rng.choice(DEVICES), max(-1.0, min(1.0, self.rng.gauss(0.35, 0.35))))
             for cid in cat.customer_ids(n_customers)
         ]
+        # Planted churn cohort (~8%): their buying collapses in the last 45 days of the backfill
+        # and they stay mostly inactive in the live stream. Deterministic, so the at-risk model can
+        # be scored against it (src/batch/at_risk.py evaluation).
+        self.churners = {c.customer_pid for c in random.Random(seed + 99).sample(self.customers, int(0.08 * n_customers))}
         # cumulative weights -> O(log n) sampling (plain weights= is O(n) per draw)
         self.cust_cum = list(itertools.accumulate(c.activity for c in self.customers))
         self.cat_cum = list(itertools.accumulate(self.cat_weights))
         self.prod_cum = {k: list(itertools.accumulate(p.popularity for p in v)) for k, v in self.by_cat.items()}
         self._camp_cache: dict[dt.date, list[cat.Campaign]] = {}
 
-    def pick_customer(self, rng: random.Random) -> Customer:
-        return rng.choices(self.customers, cum_weights=self.cust_cum)[0]
+    def pick_customer(self, rng: random.Random, churn_active: bool = False) -> Customer:
+        """churn_active=True: churners are skipped 90% of the time (they have mostly stopped)."""
+        while True:
+            c = rng.choices(self.customers, cum_weights=self.cust_cum)[0]
+            if not churn_active or c.customer_pid not in self.churners or rng.random() < 0.1:
+                return c
 
     def pick_category(self, rng: random.Random) -> str:
         return rng.choices(self.cat_names, cum_weights=self.cat_cum)[0]
@@ -148,8 +156,8 @@ def session_events(world: World, now: dt.datetime, rng: random.Random) -> list[t
     Funnel rates are typical e-commerce orders of magnitude: ~30% of sessions add to cart,
     ~40% of carts convert, ~6% of orders leave a review (raised to keep live sentiment visible).
     """
-    c = world.pick_customer(rng)
-    session_id = uuid.UUID(int=rng.getrandbits(128), version=4).hex[:16]
+    c = world.pick_customer(rng, churn_active=True)  # live stream: churn cohort has already lapsed
+    session_id =uuid.UUID(int=rng.getrandbits(128), version=4).hex[:16]
     category = world.pick_category(rng)
     out: list[tuple[str, dict]] = []
     t = now

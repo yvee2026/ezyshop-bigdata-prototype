@@ -29,7 +29,6 @@ from src.generator import catalogue as cat
 from src.generator.events import HOURLY, World, order_event, review_event, seasonal_factor, to_json
 
 WEEKDAY = [0.95, 0.90, 0.95, 1.00, 1.05, 1.12, 1.03]  # Mon..Sun
-CHURN_SHARE = 0.08
 CHURN_DAYS = 45
 TMP = "/tmp/ezyshop_backfill"
 
@@ -56,7 +55,7 @@ def generate(days: int, orders_per_day: float, out_dir: str, seed: int) -> dict:
     end = dt.datetime.now(dt.timezone.utc).date() - dt.timedelta(days=1)
     start = end - dt.timedelta(days=days - 1)
     churn_cut = end - dt.timedelta(days=CHURN_DAYS)
-    churners = {c.customer_pid for c in rng.sample(world.customers, int(CHURN_SHARE * len(world.customers)))}
+    churners = world.churners
     shocks = quality_shocks(rng, start, days)
     total_w = sum(world.cat_weights)
     hour_cum = list(__import__("itertools").accumulate(HOURLY))
@@ -76,11 +75,7 @@ def generate(days: int, orders_per_day: float, out_dir: str, seed: int) -> dict:
             lam = base_day * w / total_w * uplift * dip * rng.lognormvariate(0, 0.06)
             n = max(0, int(round(rng.gauss(lam, math.sqrt(lam)))))
             for _ in range(n):
-                cust = world.pick_customer(rng)
-                if day > churn_cut and cust.customer_pid in churners and rng.random() < 0.9:
-                    cust = world.pick_customer(rng)  # churner mostly does not buy any more
-                    if cust.customer_pid in churners:
-                        continue
+                cust = world.pick_customer(rng, churn_active=day > churn_cut)  # churners lapse in the last 45 days
                 hour = rng.choices(range(24), cum_weights=hour_cum)[0]
                 ts = dt.datetime(day.year, day.month, day.day, hour, rng.randint(0, 59), rng.randint(0, 59),
                                  rng.randint(0, 999) * 1000, tzinfo=dt.timezone.utc)

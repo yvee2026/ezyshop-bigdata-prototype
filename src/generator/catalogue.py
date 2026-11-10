@@ -114,16 +114,32 @@ def build_products() -> list[Product]:
     return products
 
 
+# Typical recent demand of the backfill, measured: 3,314 units/day over the 56 days to 2026-11-09.
+# Stock is sized in weeks of cover against this, so reorder signals are meaningful
+# (an uncalibrated first version flagged 194/200 products: TEST_LOG T09).
+UNITS_PER_DAY = 3300
+
+
+def expected_weekly_units(products: list[Product]) -> dict[str, float]:
+    total_w = sum(w for _s, _p, w in CATEGORIES.values())
+    pop = {c: sum(p.popularity for p in products if p.category == c) for c in CATEGORIES}
+    return {p.product_id: UNITS_PER_DAY * 7 * CATEGORIES[p.category][2] / total_w * p.popularity / pop[p.category]
+            for p in products}
+
+
 def build_inventory(products: list[Product] | None = None) -> list[Inventory]:
     rng = random.Random(SEED + 2)
     products = products or build_products()
+    weekly = expected_weekly_units(products)
+    lead = {s.supplier_id: s.lead_time_days for s in build_suppliers()}
     rows = []
     for p in products:
-        base = int(40 + 400 * p.popularity * CATEGORIES[p.category][2])
-        safety = max(5, int(base * 0.15))
-        reorder = safety + int(base * 0.35)
-        # Deliberately unbalanced, as in the case study: some lines overstocked, some short
-        on_hand = int(base * rng.choice([0.1, 0.3, 0.6, 1.0, 1.0, 1.4, 2.5]))
+        wk = weekly[p.product_id]
+        safety = max(5, int(round(0.5 * wk)))                        # half a week of demand
+        reorder = safety + int(round(wk * lead[p.supplier_id] / 7))  # + demand over supplier lead time
+        # Deliberately unbalanced, as in the case study: some lines short, some overstocked
+        cover_weeks = rng.choice([0.5, 1, 2, 3, 4, 5, 6, 8, 10, 16])
+        on_hand = int(round(wk * cover_weeks))
         rows.append(Inventory(p.product_id, rng.choice(_WAREHOUSES), on_hand, reorder, safety))
     return rows
 
