@@ -1,0 +1,16 @@
+docker compose exec -T spark python -m src.gdpr.erase_customer --customer-id C00042
+erasing customer_pid=64fb959d92050d88… (raw ID is hashed with the salt and never stored)
+  bronze/clicks                rows before    53  after   0  still readable via time travel: 53
+  bronze/orders                rows before   111  after   0  still readable via time travel: 111
+  bronze/reviews               rows before    13  after   0  still readable via time travel: 13
+  silver/clicks                rows before    29  after   0  still readable via time travel: 29
+  silver/orders                rows before   111  after   0  still readable via time travel: 111
+  silver/order_items           rows before   159  after   0  still readable via time travel: 159
+  silver/reviews               rows before    11  after   0  still readable via time travel: 11
+  silver/reviews_scored        rows before    11  after   0  still readable via time travel: 11
+  gold/at_risk_customers       rows before     0  after   0  still readable via time travel: 0
+  bronze/_quarantine           rows before     0  after   0  still readable via time travel: 0
+  mongo.at_risk_customers      docs before     0  after   0
+  postgres.orders               rows deleted 0
+  VACUUM not forced: old files are removed by the scheduled VACUUM after the 7-day retention window
+erasure complete: 498 Delta rows removed, 0 remaining

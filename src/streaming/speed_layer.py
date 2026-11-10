@@ -66,6 +66,13 @@ def product_category_map(spark: SparkSession, cfg: Config):
 # --------------------------------------------------------------------------- query A: bronze
 def bronze_writer(cfg: Config):
     def write(batch: DataFrame, batch_id: int) -> None:
+        # GDPR: drop events of erased customers at ingestion (suppression list from erase_customer)
+        suppressed = [d["_id"] for d in mongo.db().gdpr_suppressed.find({}, {"_id": 1})]
+        if suppressed:
+            keep = ~F.lit(False)
+            for pid in suppressed:
+                keep = keep & ~F.col("value").contains(pid)
+            batch = batch.where(keep)
         batch.persist()
         for t in TOPICS:
             good, bad = parse(batch.where(F.col("topic") == topic_name(cfg, t)).drop("topic"), t, source="kafka")
