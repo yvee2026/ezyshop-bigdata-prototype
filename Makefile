@@ -14,7 +14,7 @@ CUSTOMER ?=
 
 .DEFAULT_GOAL := help
 .PHONY: help env up down clean init seed backfill generate burst stream nightly dashboard \
-        erase test test-unit test-integration bench demo logs ps diagram shell
+        erase test test-unit test-integration bench demo logs ps diagram shell screenshots
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n",$$1,$$2}'
@@ -85,6 +85,10 @@ ps: ## Show service status
 
 shell: ## Open a shell in the Spark container
 	$(DC) exec spark bash
+
+screenshots: ## Capture dashboard screenshots into docs/screenshots (headless Chromium in Docker)
+	docker run --rm --network ezyshop_default -v "$$PWD":/work -w /work mcr.microsoft.com/playwright/python:v1.59.0-noble \
+	  python scripts/screenshots.py http://dashboard:8501 /work/docs/screenshots
 
 diagram: ## Re-render docs/architecture.png from docs/architecture.mmd (needs Node/npx on the host)
 	npx -y @mermaid-js/mermaid-cli@11.4.2 -i docs/architecture.mmd -o docs/architecture.png -w 1800 -b white

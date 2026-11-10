@@ -182,6 +182,9 @@ services:
     build: { context: ., dockerfile: docker/dashboard/Dockerfile }
     image: ezyshop/dashboard:0.1
     <<: *app-env
+    environment:
+      STREAMLIT_THEME_BASE: light   # charts use the light chart surface; keep the page consistent
+      STREAMLIT_THEME_PRIMARY_COLOR: "#2a78d6"
     ports:
       - "${HOST_PORT_DASHBOARD}:8501"
     volumes:
