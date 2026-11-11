@@ -75,7 +75,7 @@ Speaker notes are written to be read almost verbatim at a calm pace (about 140 w
 >
 > Recovery: I killed Spark in the middle of a batch. It had written clicks and orders to bronze but not reviews. After the restart Delta skipped the two tables already committed and wrote only reviews; Kafka, bronze and Mongo counts matched exactly.
 >
-> And the test log has fourteen real issues: MinIO images that are no longer pullable, the Spark JVM being killed for memory during the benchmarks until I bounded the batch size, and at-risk precision of only thirty-six percent until I tuned the thresholds. One optimisation, lowering shuffle partitions from 200 to 6, made the stream almost six times faster.
+> And the test log has fifteen real issues: MinIO images that are no longer pullable, the Spark JVM being killed for memory during the benchmarks until I bounded the batch size, and at-risk precision of only thirty-six percent until I tuned the thresholds. One optimisation, lowering shuffle partitions from 200 to 6, made the stream almost six times faster.
 
 ## 8:45–10:00 · Value, limitations, improvements (≈ 170 words)
 

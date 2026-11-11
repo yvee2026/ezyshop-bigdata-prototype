@@ -391,7 +391,7 @@ Each decision below gives the alternative considered, why this option was chosen
 | No real users | +25% personalisation cannot be measured; recommendations not implemented | KPI table (A2 Table 4) baseline still required |
 | Cost not measured in the cloud | Resource usage is recorded (6.7) but prices are A2's assumptions | Risk 2 (cost overrun) |
 | Erasure relies on VACUUM within the retention window; Kafka keeps data for 24 h | Erasure is complete only after VACUUM and topic retention; time travel cannot reach back past an erasure | Risk 1 (privacy) |
-| Open-source stack run by a small team | Prototype setup alone hit 14 logged issues, including two JVM OOM kills and an image no longer being published (TEST_LOG) | Risk 6 (skills): supports A2's managed-services recommendation |
+| Open-source stack run by a small team | Prototype setup alone hit 15 logged issues, including two JVM OOM kills and an image no longer being published (TEST_LOG) | Risk 6 (skills): supports A2's managed-services recommendation |
 | Spark/Delta ecosystem | Delta favours Spark; migrating to Iceberg is possible but not free | Risk 5 (lock-in): open Parquet underneath keeps the exit open |
 
 ---
@@ -409,7 +409,7 @@ All of this runs on pseudonymised data with a tested erasure path. The prototype
 
 * the storage-commit path, not compute, limits the speed layer;
 * the 12-machine speed-layer estimate is generous if "10,000 TPS" means events, and too small if it means orders;
-* operating this stack hit 14 non-trivial issues even at laptop scale, which supports A2's managed-services recommendation (risk 6).
+* operating this stack hit 15 non-trivial issues even at laptop scale, which supports A2's managed-services recommendation (risk 6).
 
 **What it cannot prove:** 10,000 TPS on real infrastructure, EzyShop's real forecast accuracy, the +25% personalisation uplift, or real cloud cost.
 
