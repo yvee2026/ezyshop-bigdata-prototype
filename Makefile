@@ -26,10 +26,10 @@ up: env ## Build images and start all services; waits until every service is hea
 	$(DC) up -d --build --wait
 	@$(DC) ps
 
-down: ## Stop all services (keeps data volumes)
+down: env ## Stop all services (keeps data volumes)
 	$(DC) --profile init down
 
-clean: ## Stop everything and DELETE all data volumes (Kafka, lake, Mongo, Postgres)
+clean: env ## Stop everything and DELETE all data volumes (Kafka, lake, Mongo, Postgres)
 	$(DC) --profile init down -v --remove-orphans
 
 init: env ## Create Kafka topics, the lake bucket, and seed Postgres (idempotent)
