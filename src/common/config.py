@@ -34,6 +34,7 @@ class Config:
     s3_access_key: str = field(default_factory=lambda: _env("S3_ACCESS_KEY", ""))
     s3_secret_key: str = field(default_factory=lambda: _env("S3_SECRET_KEY", ""))
     lake_bucket: str = field(default_factory=lambda: _env("LAKE_BUCKET", "ezyshop-lake"))
+    lake_prefix: str = field(default_factory=lambda: _env("LAKE_PREFIX", ""))  # isolates benchmark runs
 
     # Mongo
     mongo_user: str = field(default_factory=lambda: _env("MONGO_USER", ""))
@@ -60,7 +61,7 @@ class Config:
 
     # Spark
     spark_master: str = field(default_factory=lambda: _env("SPARK_MASTER", "local[3]"))
-    spark_driver_memory: str = field(default_factory=lambda: _env("SPARK_DRIVER_MEMORY", "2g"))
+    spark_driver_memory: str = field(default_factory=lambda: _env("SPARK_DRIVER_MEMORY", "1536m"))
     shuffle_partitions: int = field(default_factory=lambda: _int("SPARK_SHUFFLE_PARTITIONS", 6))
     window_minutes: int = field(default_factory=lambda: _int("WINDOW_MINUTES", 1))
     watermark_minutes: int = field(default_factory=lambda: _int("WATERMARK_MINUTES", 10))
@@ -70,7 +71,8 @@ class Config:
     # ---- derived helpers ----
     @property
     def lake(self) -> str:
-        return f"s3a://{self.lake_bucket}"
+        base = f"s3a://{self.lake_bucket}"
+        return f"{base}/{self.lake_prefix.strip('/')}" if self.lake_prefix else base
 
     def path(self, *parts: str) -> str:
         """s3a path inside the lake, e.g. cfg.path('bronze', 'orders')."""

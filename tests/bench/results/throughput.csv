@@ -1,0 +1,7 @@
+partitions,master,variant,events,batch_cap,batches,live_events_per_s,bronze_events_per_s,pipeline_events_per_s,status
+1,local[1],live_only,449831,50000,9,12388,,12388,ok
+3,local[3],live_only,449999,50000,10,9545,,9545,ok
+6,local[6],live_only,449863,50000,9,7774,,7774,ok
+1,local[1],full,449926,50000,9,9315,3842,3842,ok
+3,local[3],full,449904,50000,9,10180,5317,5317,ok
+6,local[6],full,449850,50000,8,5750,2007,2007,stream exited with code 1

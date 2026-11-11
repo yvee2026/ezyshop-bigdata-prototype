@@ -145,6 +145,8 @@ services:
     image: ezyshop/spark:0.1
     hostname: spark
     <<: *app-env
+    environment:
+      SPARK_CONF_DIR: /app/docker/spark/conf   # log4j2.properties
     ports:
       - "${HOST_PORT_SPARK_UI}:4040"
     volumes:

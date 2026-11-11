@@ -1,0 +1,11 @@
+26/11/11 01:15:57 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+speed layer: master=local[3] trigger=1s maxOffsetsPerTrigger=50000 window=1m watermark=10m products=200
+26/11/11 01:16:03 WARN ResolveWriteToStream: spark.sql.adaptive.enabled is not supported in streaming DataFrames/Datasets and will be disabled.
+26/11/11 01:16:04 WARN AdminClientConfig: These configurations '[key.deserializer, value.deserializer, enable.auto.commit, max.poll.records, auto.offset.reset]' were supplied but are not used yet.
+26/11/11 01:16:35 WARN ProcessingTimeExecutor: Current batch is falling behind. The trigger interval is 1000 milliseconds, but spent 30692 milliseconds
+26/11/11 01:16:58 WARN ProcessingTimeExecutor: Current batch is falling behind. The trigger interval is 1000 milliseconds, but spent 23363 milliseconds
+26/11/11 01:17:23 WARN ProcessingTimeExecutor: Current batch is falling behind. The trigger interval is 1000 milliseconds, but spent 25196 milliseconds
+26/11/11 01:17:50 WARN ProcessingTimeExecutor: Current batch is falling behind. The trigger interval is 1000 milliseconds, but spent 26848 milliseconds
+26/11/11 01:18:22 WARN ProcessingTimeExecutor: Current batch is falling behind. The trigger interval is 1000 milliseconds, but spent 32452 milliseconds
+26/11/11 01:18:47 WARN ProcessingTimeExecutor: Current batch is falling behind. The trigger interval is 1000 milliseconds, but spent 24358 milliseconds
+stopping streaming queries ...

@@ -7,6 +7,11 @@ Checks
 2. No duplicate writes:   bronze rows == distinct (kafka_partition, kafka_offset)
 3. No double counting:    Mongo __all__ orders/views == distinct order/view event_ids in bronze
                           (same time range; differences can only come from events later than the watermark)
+
+GDPR-erased customers (Mongo `gdpr_suppressed`) are accounted for explicitly: their events are
+still in Kafka until retention expires but were deleted from / never written to bronze, while the
+anonymous live aggregates counted them before the erasure. So the checks become
+  bronze + quarantine + erased == Kafka, and bronze_distinct <= Mongo <= bronze_distinct + erased.
 """
 import json
 
@@ -34,6 +39,25 @@ for t in ("clicks", "orders", "reviews"):
     kafka_total[t] = n
 c.close()
 
+# ---- events of GDPR-erased customers still present in Kafka (retention)
+erased_pids = [d["_id"] for d in mongo.db().gdpr_suppressed.find({}, {"_id": 1})]
+kraw = (spark.read.format("kafka").option("kafka.bootstrap.servers", cfg.kafka_bootstrap)
+        .option("subscribe", f"{cfg.topic_clicks},{cfg.topic_orders},{cfg.topic_reviews}")
+        .option("startingOffsets", "earliest").load()
+        .select("topic", F.col("value").cast("string").alias("v")))
+erased = {"clicks": 0, "orders": 0, "reviews": 0}
+erased_orders = erased_views = 0
+if erased_pids:
+    cond = F.lit(False)
+    for pid in erased_pids:
+        cond = cond | F.col("v").contains(pid)
+    e = kraw.where(cond).cache()
+    for t in erased:
+        erased[t] = e.where(F.col("topic") == getattr(cfg, f"topic_{t}")).count()
+    erased_orders = e.where(F.col("topic") == cfg.topic_orders).select(F.get_json_object("v", "$.event_id")).distinct().count()
+    erased_views = (e.where((F.col("topic") == cfg.topic_clicks) & (F.get_json_object("v", "$.action") == "view"))
+                    .select(F.get_json_object("v", "$.event_id")).distinct().count())
+
 q = spark.read.format("delta").load(cfg.path("bronze", "_quarantine")).where("source='kafka'")
 ok = True
 for t in ("clicks", "orders", "reviews"):
@@ -42,8 +66,8 @@ for t in ("clicks", "orders", "reviews"):
     distinct_off = b.select("kafka_partition", "kafka_offset").distinct().count()
     bad = q.where(F.col("topic") == t).count()
     result[t] = {"kafka_messages": kafka_total[t], "bronze_rows": rows, "quarantine_rows": bad,
-                 "bronze_distinct_offsets": distinct_off,
-                 "no_loss": rows + bad == kafka_total[t], "no_duplicate_writes": rows == distinct_off}
+                 "erased_customer_messages": erased[t], "bronze_distinct_offsets": distinct_off,
+                 "no_loss": rows + bad + erased[t] == kafka_total[t], "no_duplicate_writes": rows == distinct_off}
     ok &= result[t]["no_loss"] and result[t]["no_duplicate_writes"]
 
 # ---- Mongo vs bronze (distinct events) over the windows present in Mongo
@@ -61,9 +85,11 @@ if docs:
         "mongo_orders": m_orders, "bronze_distinct_orders": b_orders, "orders_diff": m_orders - b_orders,
         "mongo_views": m_views, "bronze_distinct_views": b_views, "views_diff": m_views - b_views,
         "bronze_order_rows_incl_duplicates": o.count(),
+        "erased_customer_orders": erased_orders, "erased_customer_views": erased_views,
     }
-    # Mongo must never exceed the distinct count (that would be double counting)
-    ok &= m_orders <= b_orders and m_views <= b_views
+    # Mongo may exceed bronze only by the erased customers' events (counted before erasure);
+    # anything more would be double counting
+    ok &= b_orders <= m_orders <= b_orders + erased_orders and b_views - 0 <= m_views <= b_views + erased_views
 
 print(json.dumps(result, indent=2, default=str))
 print("COUNTS OK" if ok else "COUNTS MISMATCH")

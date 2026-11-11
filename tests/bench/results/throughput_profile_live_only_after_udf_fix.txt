@@ -1,0 +1,2 @@
+ROW {"partitions": 1, "live_events_per_s": 11948, "task_time_s": 21.9, "jvm_cpu_s": 7.0, "gc_s": 0.3, "stage_wall_s": 22.9, "tasks": 88}
+ROW {"partitions": 6, "live_events_per_s": 9196, "task_time_s": 110.1, "jvm_cpu_s": 18.1, "gc_s": 4.3, "stage_wall_s": 30.1, "tasks": 151}

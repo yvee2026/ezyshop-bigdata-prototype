@@ -42,8 +42,15 @@ def rating_label(rating: int) -> str:
 
 
 def compound_series(texts: pd.Series) -> pd.Series:
+    """Score only non-empty texts. In the speed layer ~99% of rows are clicks/orders with "" text;
+    calling Python per row for them dominated the UDF's cost (TEST_LOG T13)."""
     a = analyzer()
-    return texts.fillna("").map(lambda t: float(a.polarity_scores(t)["compound"]) if t else 0.0)
+    texts = texts.fillna("")
+    out = pd.Series(0.0, index=texts.index)
+    mask = texts.str.len() > 0
+    if mask.any():
+        out[mask] = [float(a.polarity_scores(t)["compound"]) for t in texts[mask]]
+    return out
 
 
 def vader_udf():

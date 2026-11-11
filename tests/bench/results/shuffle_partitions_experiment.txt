@@ -1,0 +1,2 @@
+ROW shuffle_partitions=6 {"partitions": 3, "live_events_per_s": 8941, "task_time_s": 70.2, "tasks": 118, "stage_wall_s": 30.4}
+ROW shuffle_partitions=200 {"partitions": 3, "live_events_per_s": 1512, "task_time_s": null, "tasks": null, "stage_wall_s": null}

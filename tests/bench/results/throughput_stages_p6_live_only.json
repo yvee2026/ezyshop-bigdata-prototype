@@ -1,0 +1,34 @@
+{
+ "call": {
+  "stages": 5,
+  "tasks": 30,
+  "task_time_s": 15.564,
+  "cpu_s": 2.143457217,
+  "gc_s": 0.096,
+  "wall_s": 7.286
+ },
+ "run": {
+  "stages": 8,
+  "tasks": 96,
+  "task_time_s": 51.278,
+  "cpu_s": 10.058082258999999,
+  "gc_s": 3.173,
+  "wall_s": 13.779999999999998
+ },
+ "start": {
+  "stages": 2,
+  "tasks": 24,
+  "task_time_s": 43.145,
+  "cpu_s": 5.834481827,
+  "gc_s": 1.077,
+  "wall_s": 8.804
+ },
+ "collect": {
+  "stages": 1,
+  "tasks": 1,
+  "task_time_s": 0.069,
+  "cpu_s": 0.06398771,
+  "gc_s": 0.0,
+  "wall_s": 0.232
+ }
+}

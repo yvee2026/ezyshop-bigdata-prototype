@@ -49,7 +49,8 @@ def make_producer(bootstrap: str) -> Producer:
     })
 
 
-def dirty(topic: str, ev: dict, rng: random.Random, stats: Counter) -> list[tuple[str, bytes, bytes]]:
+def dirty(topic: str, ev: dict, rng: random.Random, stats: Counter,
+          late_rate: float = LATE_RATE) -> list[tuple[str, bytes, bytes]]:
     """Return 1-2 (topic, key, value) messages for this event, applying dirt injection."""
     key = ev["customer_pid"].encode()
     r = rng.random()
@@ -59,7 +60,7 @@ def dirty(topic: str, ev: dict, rng: random.Random, stats: Counter) -> list[tupl
             return [(topic, key, to_json(ev)[: rng.randint(5, 40)])]          # truncated JSON
         bad = dict(ev, event_time="not-a-timestamp")
         return [(topic, key, to_json(bad))]                                  # bad timestamp
-    if r < MALFORMED_RATE + LATE_RATE:
+    if r < MALFORMED_RATE + late_rate:
         stats["late"] += 1
         late = dt.datetime.now(dt.timezone.utc) - dt.timedelta(seconds=rng.randint(120, 600))
         ev = dict(ev, event_time=iso(late))
@@ -71,7 +72,7 @@ def dirty(topic: str, ev: dict, rng: random.Random, stats: Counter) -> list[tupl
 
 
 def run(eps: float, duration: float, burst: bool, diurnal: bool, max_events: int | None = None,
-        quiet: bool = False) -> Counter:
+        quiet: bool = False, late: bool = True) -> Counter:
     cfg = get_config()
     rng = random.Random(cfg.random_seed + int(time.time()))
     world = World(cfg.pseudo_salt, cfg.num_customers, cfg.random_seed)
@@ -107,7 +108,7 @@ def run(eps: float, duration: float, burst: bool, diurnal: bool, max_events: int
             if not buf:
                 buf.extend(session_events(world, dt.datetime.now(dt.timezone.utc), rng))
             topic, ev = buf.popleft()
-            for t, k, v in dirty(topic, ev, rng, stats):
+            for t, k, v in dirty(topic, ev, rng, stats, LATE_RATE if late else 0.0):
                 while True:
                     try:
                         producer.produce(topics[t], key=k, value=v)
@@ -143,8 +144,10 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--burst", action="store_true")
     ap.add_argument("--diurnal", action="store_true")
     ap.add_argument("--max-events", type=int, default=None)
+    ap.add_argument("--no-late", action="store_true", help="disable late-event injection (latency benchmark)")
+    ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
-    run(a.eps, a.duration, a.burst, a.diurnal, a.max_events)
+    run(a.eps, a.duration, a.burst, a.diurnal, a.max_events, quiet=a.quiet, late=not a.no_late)
 
 
 if __name__ == "__main__":

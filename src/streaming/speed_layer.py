@@ -236,6 +236,9 @@ def start(cfg: Config, master: str | None, trigger_s: int, max_offsets: int, sta
     spark = build_spark("ezyshop-speed-layer", cfg, master=master, extra={
         "spark.sql.streaming.stateStore.providerClass":
             "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider",
+        # cap native RocksDB memory (state store) so bursts cannot grow it unboundedly (TEST_LOG T12)
+        "spark.sql.streaming.stateStore.rocksdb.boundedMemoryUsage": "true",
+        "spark.sql.streaming.stateStore.rocksdb.maxMemoryUsageMB": "256",
         **(extra_conf or {}),
     })
     mongo.ensure_indexes()
@@ -266,9 +269,10 @@ def main() -> None:
     ap.add_argument("--max-offsets", type=int, default=cfg.max_offsets_per_trigger)
     ap.add_argument("--starting-offsets", default="earliest")
     ap.add_argument("--run-seconds", type=int, default=0, help="stop after N seconds (tests/benchmarks)")
+    ap.add_argument("--no-bronze", action="store_true", help="run only the live aggregation (capacity benchmark)")
     a = ap.parse_args()
 
-    spark, queries = start(cfg, a.master, a.trigger, a.max_offsets, a.starting_offsets)
+    spark, queries = start(cfg, a.master, a.trigger, a.max_offsets, a.starting_offsets, bronze=not a.no_bronze)
     stop = {"flag": False}
     signal.signal(signal.SIGTERM, lambda *_: stop.update(flag=True))
     t0 = time.time()
