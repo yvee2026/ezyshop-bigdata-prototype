@@ -1,0 +1,12 @@
+$ docker compose exec -T spark python scripts/vacuum_demo.py C00043
+bronze/orders rows for C00043 before erasure: 18 (table version 20)
+Deleted 117 files and directories in a total of 550 directories.
+Deleted 9 files and directories in a total of 548 directories.
+Deleted 81 files and directories in a total of 20 directories.
+Deleted 143 files and directories in a total of 20 directories.
+Deleted 6 files and directories in a total of 20 directories.
+Deleted 41 files and directories in a total of 20 directories.
+after DELETE + VACUUM, current rows: 0
+time travel to version 20 now FAILS: Py4JJavaError: An error occurred while calling o276.count.
+SparkException: Encountered error while reading file s3a://ezyshop-lake/bronze/orders/event_date=2025-12-06/part-00001-92411fba-32e6-4ab7-a6cb-c1435b740a7c.c000.snappy.parquet.
+(Java stack trace omitted: the Parquet file holding the old rows no longer exists.)

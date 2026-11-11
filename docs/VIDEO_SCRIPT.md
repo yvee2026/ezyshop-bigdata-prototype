@@ -58,10 +58,10 @@ Speaker notes are written to be read almost verbatim at a calm pace (about 140 w
 | 4:05 | Tab *generate*: `make generate` | "And this is live traffic at two hundred events per second. Notice the counters for duplicates, late events and malformed messages: dirt injected on purpose to test the cleaning." |
 | 4:30 | Dashboard → Marketing tab | "Within about a minute the dashboard fills. The freshness badge is green: the newest data is seconds old against a five-minute target. Revenue and orders per minute, the funnel from views to cart to orders, revenue by category, and live review sentiment." |
 | 5:10 | Tab *generate*: Ctrl-C, then `make burst` | "Now Black Friday: ten times the rate, about two thousand events per second." |
-| 5:20 | Dashboard (wait for one refresh) | "Orders per minute jump. The question is whether freshness holds. Kafka absorbs the burst; Spark simply takes bigger batches. The badge stays green. In the benchmark the worst-case latency in burst mode was **⟨latency burst max⟩ seconds**, against the three-hundred-second target." |
-| 6:00 | Dashboard → Operations tab | "This comes from the nightly batch. Weekly demand for electronics: actuals, the eight-week test where the model was evaluated, and the next four weeks, including the Black Friday spike. Accuracy per category against the ninety-percent line: the model reaches **94.0 percent** overall, the seasonal-naive baseline **82.4 percent**. Below, reorder alerts against the Postgres inventory." |
+| 5:20 | Dashboard (wait for one refresh) | "Orders per minute jump. The question is whether freshness holds. Kafka absorbs the burst; Spark simply takes bigger batches. The badge stays green. In the benchmark the average event was visible after **38 seconds at p95** in burst mode, and the worst event in any batch after **107 seconds**, against the three-hundred-second target." |
+| 6:00 | Dashboard → Operations tab | "This comes from the nightly batch. Weekly demand for electronics: actuals, the eight-week test where the model was evaluated, and the next four weeks, including the Black Friday spike. Accuracy per category against the ninety-percent line: gradient-boosted trees reach **93.4 percent** overall, the seasonal-naive baseline **82.0 percent**; fed back on itself for eight weeks it still holds **90.5 percent**. Below, reorder alerts against the Postgres inventory." |
 | 6:30 | Dashboard → Customers tab | "At-risk customers, pseudonymised IDs only, each with a reason, for example 'orders per thirty days fell a hundred percent; two negative reviews'. On the right, the lowest-sentiment products and weekly sentiment per category; you can see dips where I planted quality problems in the synthetic data." |
-| 6:55 | Tab *commands*: `make erase CUSTOMER=C00042` | "Finally GDPR. I erase customer C00042: the ID is hashed with the salt, and rows are deleted from every Delta table, Mongo and Postgres. Before and after counts: **498 rows → 0**. Note the last column: the rows are still readable through Delta time travel. That's why VACUUM must run within the retention window; deleting is not the same as physically erasing. The pseudonym also goes on a suppression list so new events are dropped at ingestion." |
+| 6:55 | Tab *commands*: `make erase CUSTOMER=C00042` | "Finally GDPR. I erase customer C00042: the ID is hashed with the salt, and rows are deleted from every Delta table, Mongo and Postgres. Before and after counts: **476 rows → 0**. Note the last column: the rows are still readable through Delta time travel. That's why VACUUM must run within the retention window; deleting is not the same as physically erasing. The pseudonym also goes on a suppression list so new events are dropped at ingestion." |
 
 ## 7:30–8:45 · Testing (≈ 180 words)
 
@@ -69,19 +69,19 @@ Speaker notes are written to be read almost verbatim at a calm pace (about 140 w
 
 > How do I know it works? Twenty-nine unit tests, an end-to-end smoke test and a GDPR test all pass.
 >
-> Throughput: with one partition and one core Spark processed **⟨p1 capacity⟩** events per second; with three, **⟨p3 capacity⟩**; with six, **⟨p6 capacity⟩**. A laptop cannot reach ten thousand TPS, and I'm not claiming it does. The trend is the evidence, and the extrapolation is in the README.
+> Throughput: I drained a fixed Kafka backlog with one, three and six cores. The limiting stage, writing raw events to the Delta lake, went from **3,842** to **5,317** events per second from one to three cores. Six cores ran out of memory on this shared laptop, and the live aggregation actually got slower with more cores: the Spark profile shows tasks waiting, not computing. So the honest conclusion: a laptop cannot reach ten thousand TPS, and I'm not claiming it does. The per-core rate, about 1,800 events per second, is the building block; the README extrapolates to roughly twelve cores for ten thousand events per second.
 >
-> Latency: p95 for the average event was **⟨normal p95⟩** seconds at normal load and **⟨burst p95⟩** in burst mode, far inside five minutes.
+> Latency: p95 for the average event was **28 seconds** at normal load and **38 seconds** in burst mode, about eight times inside the five-minute target.
 >
 > Recovery: I killed Spark in the middle of a batch. It had written clicks and orders to bronze but not reviews. After the restart Delta skipped the two tables already committed and wrote only reviews; Kafka, bronze and Mongo counts matched exactly.
 >
-> And the test log has thirteen real issues: MinIO images that are no longer pullable, a planner bug in my first single-pass query, and at-risk precision of only thirty-six percent until I tuned the thresholds.
+> And the test log has fourteen real issues: MinIO images that are no longer pullable, the Spark JVM being killed for memory during the benchmarks until I bounded the batch size, and at-risk precision of only thirty-six percent until I tuned the thresholds. One optimisation, lowering shuffle partitions from 200 to 6, made the stream almost six times faster.
 
 ## 8:45–10:00 · Value, limitations, improvements (≈ 170 words)
 
 **On screen:** summary slide: three columns *What it proves / What it can't prove / Next steps*.
 
-> What does EzyShop gain? A buffer that turns Black Friday into bigger batches instead of an outage; a marketing view that's seconds old instead of a day; a forecast that beats last year's numbers by more than ten points; and a churn list with reasons, all on pseudonymised data with tested erasure.
+> What does EzyShop gain? A buffer that turns Black Friday into bigger batches instead of an outage; a marketing view that's seconds old instead of a day; a forecast that beats last year's numbers by about eleven points; and a churn list with reasons, all on pseudonymised data with tested erasure.
 >
 > What can't the prototype prove? Ten thousand TPS: it's a single broker on a laptop. Real forecast accuracy: the data is synthetic and contains the patterns the model looks for. And the plus-twenty-five-percent personalisation target needs real users and an A/B test.
 >

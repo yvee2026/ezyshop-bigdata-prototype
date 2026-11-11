@@ -1,0 +1,173 @@
+{
+ "as_of": "2026-11-10",
+ "started_at": "2026-11-11T01:31:17.694313+00:00",
+ "silver": {
+  "pg_products": 200,
+  "pg_inventory": 200,
+  "pg_suppliers": 20,
+  "pg_campaigns": 76,
+  "bronze_orders": 653007,
+  "silver_orders": 652934,
+  "silver_order_items": 979466,
+  "bronze_reviews": 46144,
+  "silver_reviews": 46120,
+  "bronze_clicks": 194881,
+  "silver_clicks": 192946,
+  "unknown_product_lines": 0,
+  "seconds": 49.4
+ },
+ "sentiment": {
+  "reviews_scored": 46120,
+  "agreement": 0.66,
+  "polar_agreement": 0.8188,
+  "pearson_compound_vs_rating": 0.6371,
+  "confusion": {
+   "neu->neu": 2657,
+   "neu->pos": 6270,
+   "pos->neg": 1218,
+   "pos->pos": 22018,
+   "neg->neg": 5763,
+   "pos->neu": 2157,
+   "neu->neg": 3263,
+   "neg->pos": 2125,
+   "neg->neu": 649
+  },
+  "seconds": 11.0
+ },
+ "forecast": {
+  "weeks": 78,
+  "train_rows": 528,
+  "test_rows": 64,
+  "test_weeks": [
+   "2026-09-14",
+   "2026-09-21",
+   "2026-09-28",
+   "2026-10-05",
+   "2026-10-12",
+   "2026-10-19",
+   "2026-10-26",
+   "2026-11-02"
+  ],
+  "as_of": "2026-11-10",
+  "one_step": {
+   "seasonal_naive": {
+    "mape": 0.1801,
+    "accuracy": 0.8199,
+    "per_category_accuracy": {
+     "apparel": 0.7724,
+     "beauty": 0.8499,
+     "computing": 0.8625,
+     "electronics": 0.7831,
+     "footwear": 0.757,
+     "home": 0.8089,
+     "kitchen": 0.8882,
+     "phones": 0.8375
+    }
+   },
+   "linear_regression": {
+    "mape": 0.0672,
+    "accuracy": 0.9328,
+    "per_category_accuracy": {
+     "apparel": 0.9035,
+     "beauty": 0.9465,
+     "computing": 0.9183,
+     "electronics": 0.9601,
+     "footwear": 0.9142,
+     "home": 0.9499,
+     "kitchen": 0.9463,
+     "phones": 0.9236
+    }
+   },
+   "gbt": {
+    "mape": 0.0658,
+    "accuracy": 0.9342,
+    "per_category_accuracy": {
+     "apparel": 0.901,
+     "beauty": 0.9524,
+     "computing": 0.9048,
+     "electronics": 0.9319,
+     "footwear": 0.9217,
+     "home": 0.9571,
+     "kitchen": 0.9454,
+     "phones": 0.9592
+    }
+   }
+  },
+  "best_model": "gbt",
+  "recursive_8w": {
+   "model": "gbt",
+   "mape": 0.0946,
+   "accuracy": 0.9054,
+   "per_category_accuracy": {
+    "apparel": 0.9378,
+    "beauty": 0.8629,
+    "computing": 0.9235,
+    "electronics": 0.8511,
+    "footwear": 0.8997,
+    "home": 0.9081,
+    "kitchen": 0.9281,
+    "phones": 0.9324
+   }
+  },
+  "future_weeks": [
+   "2026-11-09",
+   "2026-11-16",
+   "2026-11-23",
+   "2026-11-30"
+  ],
+  "reorder": {
+   "products": 200,
+   "reorder_now": 137,
+   "overstock": 0
+  },
+  "seconds": 88.0
+ },
+ "at_risk": {
+  "as_of": "2026-11-10",
+  "customers": 5000,
+  "at_risk": 764,
+  "freq_flag": 626,
+  "voice_flag": 188,
+  "both": 50,
+  "seconds": 7.1,
+  "planted_churners": 400,
+  "true_positives": 339,
+  "precision": 0.444,
+  "recall": 0.848,
+  "precision_top100": 0.83,
+  "freq_rule_recall": 0.835
+ },
+ "optimize": {
+  "bronze/clicks": {
+   "files_before": 24,
+   "files_after": 1,
+   "optimize_s": 2.4,
+   "probe_s_before": 0.504,
+   "probe_s_after": 0.313,
+   "probe_rows": 18638,
+   "rows_unchanged": true,
+   "zorder": null
+  },
+  "silver/order_items": {
+   "files_before": 114,
+   "files_after": 19,
+   "optimize_s": 10.1,
+   "probe_s_before": 1.701,
+   "probe_s_after": 0.652,
+   "probe_rows": 134972,
+   "rows_unchanged": true,
+   "zorder": "category"
+  },
+  "silver/reviews_scored": {
+   "files_before": 37,
+   "files_after": 19,
+   "optimize_s": 3.9,
+   "probe_s_before": 0.606,
+   "probe_s_after": 0.607,
+   "probe_rows": 6231,
+   "rows_unchanged": true,
+   "zorder": "category"
+  }
+ },
+ "total_seconds": 204.0
+}

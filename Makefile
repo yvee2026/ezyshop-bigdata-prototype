@@ -88,7 +88,7 @@ shell: ## Open a shell in the Spark container
 
 screenshots: ## Capture dashboard screenshots into docs/screenshots (headless Chromium in Docker)
 	docker run --rm --network ezyshop_default -v "$$PWD":/work -w /work mcr.microsoft.com/playwright/python:v1.59.0-noble \
-	  python scripts/screenshots.py http://dashboard:8501 /work/docs/screenshots
+	  bash -c "pip install -q --disable-pip-version-check playwright==1.59.0 && python scripts/screenshots.py http://dashboard:8501 /work/docs/screenshots"
 
 diagram: ## Re-render docs/architecture.png from docs/architecture.mmd (needs Node/npx on the host)
 	npx -y @mermaid-js/mermaid-cli@11.17.0 -i docs/architecture.mmd -o docs/architecture.png -w 1800 -b white

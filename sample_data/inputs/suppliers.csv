@@ -1,0 +1,21 @@
+supplier_id,name,country,lead_time_days,reliability
+S001,Nordvik Trading 1,USA,5,0.82
+S002,Nordvik Mfg 2,Australia,16,0.97
+S003,Kestrel Trading 3,USA,22,0.898
+S004,Brindle Group 4,Japan,19,0.851
+S005,Tavi Group 5,Australia,14,0.812
+S006,Lumio Group 6,Japan,40,0.865
+S007,Corvo Mfg 7,Australia,34,0.944
+S008,Tavi Mfg 8,India,6,0.956
+S009,Tavi Trading 9,India,26,0.894
+S010,Lumio Trading 10,Japan,13,0.806
+S011,Lumio Group 11,China,18,0.933
+S012,Halden Supply 12,China,42,0.877
+S013,Kestrel Mfg 13,China,26,0.854
+S014,Kestrel Mfg 14,Australia,15,0.931
+S015,Tavi Mfg 15,Portugal,34,0.94
+S016,Altura Mfg 16,China,41,0.893
+S017,Brindle Trading 17,USA,8,0.838
+S018,Corvo Supply 18,Japan,32,0.932
+S019,Altura Supply 19,India,37,0.816
+S020,Tavi Group 20,China,35,0.945

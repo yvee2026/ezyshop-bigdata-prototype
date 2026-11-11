@@ -1,0 +1,618 @@
+[
+ {
+  "avg_sentiment": 0.28998888888888885,
+  "category": "home",
+  "reviews": 9,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:42:00"
+ },
+ {
+  "avg_sentiment": 0.43979999999999997,
+  "category": "beauty",
+  "reviews": 5,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:42:00"
+ },
+ {
+  "avg_sentiment": 0.48790000000000006,
+  "category": "computing",
+  "reviews": 8,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:42:00"
+ },
+ {
+  "avg_sentiment": 0.4681166666666667,
+  "category": "footwear",
+  "reviews": 12,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:42:00"
+ },
+ {
+  "avg_sentiment": 0.42831,
+  "category": "electronics",
+  "reviews": 10,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:42:00"
+ },
+ {
+  "avg_sentiment": -0.22565999999999997,
+  "category": "kitchen",
+  "reviews": 5,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:42:00"
+ },
+ {
+  "avg_sentiment": 0.626725,
+  "category": "phones",
+  "reviews": 8,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:42:00"
+ },
+ {
+  "avg_sentiment": 0.520675,
+  "category": "apparel",
+  "reviews": 16,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:42:00"
+ },
+ {
+  "avg_sentiment": 0.5766074074074075,
+  "category": "apparel",
+  "reviews": 27,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:41:00"
+ },
+ {
+  "avg_sentiment": 0.35711176470588235,
+  "category": "kitchen",
+  "reviews": 17,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:41:00"
+ },
+ {
+  "avg_sentiment": 0.36296428571428574,
+  "category": "electronics",
+  "reviews": 14,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:41:00"
+ },
+ {
+  "avg_sentiment": 0.33055555555555555,
+  "category": "computing",
+  "reviews": 18,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:41:00"
+ },
+ {
+  "avg_sentiment": 0.30517500000000003,
+  "category": "footwear",
+  "reviews": 12,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:41:00"
+ },
+ {
+  "avg_sentiment": 0.2519636363636364,
+  "category": "phones",
+  "reviews": 11,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:41:00"
+ },
+ {
+  "avg_sentiment": 0.08549166666666669,
+  "category": "beauty",
+  "reviews": 12,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:41:00"
+ },
+ {
+  "avg_sentiment": 0.3091,
+  "category": "home",
+  "reviews": 17,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:41:00"
+ },
+ {
+  "avg_sentiment": 0.09945238095238096,
+  "category": "computing",
+  "reviews": 21,
+  "updated_at": "2026-11-11 01:41:37.372000",
+  "window_start": "2026-11-11 01:40:00"
+ },
+ {
+  "avg_sentiment": 0.40508666666666665,
+  "category": "kitchen",
+  "reviews": 15,
+  "updated_at": "2026-11-11 01:41:37.372000",
+  "window_start": "2026-11-11 01:40:00"
+ },
+ {
+  "avg_sentiment": 0.4232333333333333,
+  "category": "phones",
+  "reviews": 15,
+  "updated_at": "2026-11-11 01:41:37.372000",
+  "window_start": "2026-11-11 01:40:00"
+ },
+ {
+  "avg_sentiment": 0.4873631578947368,
+  "category": "apparel",
+  "reviews": 19,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:40:00"
+ },
+ {
+  "avg_sentiment": 0.4315857142857143,
+  "category": "footwear",
+  "reviews": 21,
+  "updated_at": "2026-11-11 01:41:37.372000",
+  "window_start": "2026-11-11 01:40:00"
+ },
+ {
+  "avg_sentiment": 0.5005307692307693,
+  "category": "home",
+  "reviews": 13,
+  "updated_at": "2026-11-11 01:41:37.372000",
+  "window_start": "2026-11-11 01:40:00"
+ },
+ {
+  "avg_sentiment": 0.23522352941176478,
+  "category": "electronics",
+  "reviews": 17,
+  "updated_at": "2026-11-11 01:41:37.372000",
+  "window_start": "2026-11-11 01:40:00"
+ },
+ {
+  "avg_sentiment": 0.4544250000000001,
+  "category": "beauty",
+  "reviews": 16,
+  "updated_at": "2026-11-11 01:41:37.372000",
+  "window_start": "2026-11-11 01:40:00"
+ },
+ {
+  "avg_sentiment": 0.32606666666666667,
+  "category": "electronics",
+  "reviews": 18,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:39:00"
+ },
+ {
+  "avg_sentiment": 0.38264000000000004,
+  "category": "apparel",
+  "reviews": 35,
+  "updated_at": "2026-11-11 01:40:38.423000",
+  "window_start": "2026-11-11 01:39:00"
+ },
+ {
+  "avg_sentiment": 0.4285571428571429,
+  "category": "footwear",
+  "reviews": 14,
+  "updated_at": "2026-11-11 01:41:08.047000",
+  "window_start": "2026-11-11 01:39:00"
+ },
+ {
+  "avg_sentiment": 0.45574375,
+  "category": "beauty",
+  "reviews": 16,
+  "updated_at": "2026-11-11 01:42:09.313000",
+  "window_start": "2026-11-11 01:39:00"
+ },
+ {
+  "avg_sentiment": 0.28666,
+  "category": "home",
+  "reviews": 10,
+  "updated_at": "2026-11-11 01:40:38.423000",
+  "window_start": "2026-11-11 01:39:00"
+ },
+ {
+  "avg_sentiment": 0.4047722222222222,
+  "category": "computing",
+  "reviews": 18,
+  "updated_at": "2026-11-11 01:40:38.423000",
+  "window_start": "2026-11-11 01:39:00"
+ },
+ {
+  "avg_sentiment": 0.4709149999999999,
+  "category": "phones",
+  "reviews": 20,
+  "updated_at": "2026-11-11 01:40:38.423000",
+  "window_start": "2026-11-11 01:39:00"
+ },
+ {
+  "avg_sentiment": 0.5774466666666667,
+  "category": "kitchen",
+  "reviews": 15,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:39:00"
+ },
+ {
+  "avg_sentiment": 0.9095777777777777,
+  "category": "kitchen",
+  "reviews": 9,
+  "updated_at": "2026-11-11 01:41:08.047000",
+  "window_start": "2026-11-11 01:38:00"
+ },
+ {
+  "avg_sentiment": 0.3542785714285714,
+  "category": "apparel",
+  "reviews": 14,
+  "updated_at": "2026-11-11 01:41:37.372000",
+  "window_start": "2026-11-11 01:38:00"
+ },
+ {
+  "avg_sentiment": 0.25438333333333335,
+  "category": "home",
+  "reviews": 12,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:38:00"
+ },
+ {
+  "avg_sentiment": 0.40922499999999995,
+  "category": "computing",
+  "reviews": 16,
+  "updated_at": "2026-11-11 01:41:08.047000",
+  "window_start": "2026-11-11 01:38:00"
+ },
+ {
+  "avg_sentiment": 0.610725,
+  "category": "electronics",
+  "reviews": 12,
+  "updated_at": "2026-11-11 01:43:05.011000",
+  "window_start": "2026-11-11 01:38:00"
+ },
+ {
+  "avg_sentiment": 0.6103214285714286,
+  "category": "beauty",
+  "reviews": 14,
+  "updated_at": "2026-11-11 01:42:09.313000",
+  "window_start": "2026-11-11 01:38:00"
+ },
+ {
+  "avg_sentiment": 0.7356285714285714,
+  "category": "phones",
+  "reviews": 7,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:38:00"
+ },
+ {
+  "avg_sentiment": 0.7413909090909091,
+  "category": "footwear",
+  "reviews": 11,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:38:00"
+ },
+ {
+  "avg_sentiment": 0.8023,
+  "category": "phones",
+  "reviews": 2,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:37:00"
+ },
+ {
+  "avg_sentiment": 0.0,
+  "category": "home",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:42:38.949000",
+  "window_start": "2026-11-11 01:35:00"
+ },
+ {
+  "avg_sentiment": 0.0,
+  "category": "computing",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:40:38.423000",
+  "window_start": "2026-11-11 01:33:00"
+ },
+ {
+  "avg_sentiment": 0.9134,
+  "category": "apparel",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:41:08.047000",
+  "window_start": "2026-11-11 01:33:00"
+ },
+ {
+  "avg_sentiment": -0.743,
+  "category": "kitchen",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:39:37.964000",
+  "window_start": "2026-11-11 01:33:00"
+ },
+ {
+  "avg_sentiment": 0.993,
+  "category": "beauty",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:42:09.313000",
+  "window_start": "2026-11-11 01:33:00"
+ },
+ {
+  "avg_sentiment": 0.41706862745098033,
+  "category": "kitchen",
+  "reviews": 51,
+  "updated_at": "2026-11-11 01:30:05.043000",
+  "window_start": "2026-11-11 01:29:00"
+ },
+ {
+  "avg_sentiment": 0.384553947368421,
+  "category": "phones",
+  "reviews": 76,
+  "updated_at": "2026-11-11 01:30:05.043000",
+  "window_start": "2026-11-11 01:29:00"
+ },
+ {
+  "avg_sentiment": 0.4395892307692308,
+  "category": "footwear",
+  "reviews": 65,
+  "updated_at": "2026-11-11 01:30:05.043000",
+  "window_start": "2026-11-11 01:29:00"
+ },
+ {
+  "avg_sentiment": 0.3641014492753623,
+  "category": "beauty",
+  "reviews": 69,
+  "updated_at": "2026-11-11 01:39:37.964000",
+  "window_start": "2026-11-11 01:29:00"
+ },
+ {
+  "avg_sentiment": 0.4380089743589743,
+  "category": "home",
+  "reviews": 78,
+  "updated_at": "2026-11-11 01:39:05.487000",
+  "window_start": "2026-11-11 01:29:00"
+ },
+ {
+  "avg_sentiment": 0.4330905263157895,
+  "category": "electronics",
+  "reviews": 95,
+  "updated_at": "2026-11-11 01:39:37.964000",
+  "window_start": "2026-11-11 01:29:00"
+ },
+ {
+  "avg_sentiment": 0.490648905109489,
+  "category": "apparel",
+  "reviews": 137,
+  "updated_at": "2026-11-11 01:39:37.964000",
+  "window_start": "2026-11-11 01:29:00"
+ },
+ {
+  "avg_sentiment": 0.31775875000000003,
+  "category": "computing",
+  "reviews": 80,
+  "updated_at": "2026-11-11 01:30:05.043000",
+  "window_start": "2026-11-11 01:29:00"
+ },
+ {
+  "avg_sentiment": 0.4730099290780142,
+  "category": "footwear",
+  "reviews": 141,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:28:00"
+ },
+ {
+  "avg_sentiment": 0.40892740740740746,
+  "category": "beauty",
+  "reviews": 135,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:28:00"
+ },
+ {
+  "avg_sentiment": 0.3394412587412588,
+  "category": "home",
+  "reviews": 143,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:28:00"
+ },
+ {
+  "avg_sentiment": 0.3909623931623931,
+  "category": "apparel",
+  "reviews": 234,
+  "updated_at": "2026-11-11 01:39:05.487000",
+  "window_start": "2026-11-11 01:28:00"
+ },
+ {
+  "avg_sentiment": 0.36800068493150684,
+  "category": "computing",
+  "reviews": 146,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:28:00"
+ },
+ {
+  "avg_sentiment": 0.35558943089430894,
+  "category": "kitchen",
+  "reviews": 123,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:28:00"
+ },
+ {
+  "avg_sentiment": 0.3921084848484849,
+  "category": "phones",
+  "reviews": 165,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:28:00"
+ },
+ {
+  "avg_sentiment": 0.3416673684210526,
+  "category": "electronics",
+  "reviews": 190,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:28:00"
+ },
+ {
+  "avg_sentiment": 0.6213153846153846,
+  "category": "footwear",
+  "reviews": 13,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:27:00"
+ },
+ {
+  "avg_sentiment": 0.3925904761904762,
+  "category": "electronics",
+  "reviews": 21,
+  "updated_at": "2026-11-11 01:28:35.801000",
+  "window_start": "2026-11-11 01:27:00"
+ },
+ {
+  "avg_sentiment": 0.37765,
+  "category": "home",
+  "reviews": 12,
+  "updated_at": "2026-11-11 01:30:05.043000",
+  "window_start": "2026-11-11 01:27:00"
+ },
+ {
+  "avg_sentiment": 0.42238636363636367,
+  "category": "beauty",
+  "reviews": 22,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:27:00"
+ },
+ {
+  "avg_sentiment": 0.37833333333333335,
+  "category": "apparel",
+  "reviews": 36,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:27:00"
+ },
+ {
+  "avg_sentiment": 0.5173266666666667,
+  "category": "computing",
+  "reviews": 15,
+  "updated_at": "2026-11-11 01:30:05.043000",
+  "window_start": "2026-11-11 01:27:00"
+ },
+ {
+  "avg_sentiment": 0.33650714285714284,
+  "category": "kitchen",
+  "reviews": 14,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:27:00"
+ },
+ {
+  "avg_sentiment": 0.31973333333333337,
+  "category": "phones",
+  "reviews": 18,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:27:00"
+ },
+ {
+  "avg_sentiment": 0.28953333333333336,
+  "category": "apparel",
+  "reviews": 18,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:26:00"
+ },
+ {
+  "avg_sentiment": 0.496415,
+  "category": "phones",
+  "reviews": 20,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:26:00"
+ },
+ {
+  "avg_sentiment": 0.180005,
+  "category": "electronics",
+  "reviews": 20,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:26:00"
+ },
+ {
+  "avg_sentiment": 0.62512,
+  "category": "computing",
+  "reviews": 10,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:26:00"
+ },
+ {
+  "avg_sentiment": 0.23460909090909093,
+  "category": "kitchen",
+  "reviews": 11,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:26:00"
+ },
+ {
+  "avg_sentiment": 0.64985,
+  "category": "footwear",
+  "reviews": 8,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:26:00"
+ },
+ {
+  "avg_sentiment": 0.2518454545454545,
+  "category": "home",
+  "reviews": 11,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:26:00"
+ },
+ {
+  "avg_sentiment": 0.5989133333333333,
+  "category": "beauty",
+  "reviews": 15,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:26:00"
+ },
+ {
+  "avg_sentiment": 0.9095,
+  "category": "beauty",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:25:00"
+ },
+ {
+  "avg_sentiment": 0.484,
+  "category": "electronics",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:23:00"
+ },
+ {
+  "avg_sentiment": 0.0,
+  "category": "footwear",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:30:05.043000",
+  "window_start": "2026-11-11 01:23:00"
+ },
+ {
+  "avg_sentiment": 0.0,
+  "category": "computing",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:22:00"
+ },
+ {
+  "avg_sentiment": 0.9589,
+  "category": "footwear",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:22:00"
+ },
+ {
+  "avg_sentiment": 0.6115,
+  "category": "apparel",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:22:00"
+ },
+ {
+  "avg_sentiment": 0.2263,
+  "category": "home",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:21:00"
+ },
+ {
+  "avg_sentiment": 0.8268,
+  "category": "kitchen",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:21:00"
+ },
+ {
+  "avg_sentiment": 0.702,
+  "category": "computing",
+  "reviews": 2,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:20:00"
+ },
+ {
+  "avg_sentiment": 0.9571,
+  "category": "home",
+  "reviews": 1,
+  "updated_at": "2026-11-11 01:29:39.350000",
+  "window_start": "2026-11-11 01:20:00"
+ }
+]

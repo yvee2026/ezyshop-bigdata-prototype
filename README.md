@@ -86,7 +86,7 @@ This extends A2 §2.1.4 with real component names and measured timings:
 1. 20:14:05.312: customer *C01234* adds headphones (P0007) to the cart. The generator emits `{"event_id": …, "event_time": "…T20:14:05.312Z", "customer_pid": "9f3c…", "action": "add_to_cart", …}` to topic `clicks`, keyed by the pseudonym. The raw ID never leaves the generator.
 2. Kafka appends it to partition `hash(pid) mod 3`. During the burst, events queue here instead of overloading a database.
 3. Within one 30-second trigger, Query A writes the event unchanged to `bronze/clicks/event_date=…` (Delta, Parquet). Query B maps P0007 to `electronics`, adds it to the `20:14|electronics` and `20:14|__all__` windows, and upserts both documents into MongoDB.
-4. The marketing dashboard shows the add-to-cart in the funnel on its next 15-second refresh. In the latency benchmark (Section 6.3), the average event was visible **within ⟨see 6.3⟩ seconds** at normal load and ⟨see 6.3⟩ s in burst mode.
+4. The marketing dashboard shows the add-to-cart in the funnel on its next 15-second refresh. In the latency benchmark (Section 6.4), the average event was visible within **26 s (p50)** at normal load and **28 s (p50) / 38 s (p95)** in burst mode.
 5. Overnight, the batch layer deduplicates the event in silver, includes it in the electronics demand history, and recomputes the 4-week forecast and the reorder signal for P0007. Operations see it the next morning.
 
 ### 2.4 Big Data techniques used
@@ -162,12 +162,12 @@ make burst                    # terminal 2: Black Friday x10 for 180 s
 make nightly                  # batch layer (~3 min)
 make erase CUSTOMER=C00042    # GDPR erasure demo
 make test                     # unit tests (29)
-make test-integration         # end-to-end smoke test + GDPR test (~10 min)
-make bench                    # throughput + latency benchmarks (~40 min)
+make test-integration         # end-to-end smoke test + GDPR test (~8 min)
+make bench                    # capacity + latency benchmarks (~35 min)
 make down                     # stop (keeps data); `make clean` also deletes all data
 ```
 
-`make demo` runs `up → init → backfill →` a scripted stream with normal traffic and a burst `→ nightly` in one go (about 15 minutes on first run). `make help` lists every target.
+`make demo` runs `up → init → backfill →` a scripted stream with normal traffic and a burst `→ nightly` in one go (11 min 22 s measured from a fresh clone with cached images; add ~8 min for the first image build). `make help` lists every target.
 
 ### 4.4 Expected output at each step
 
@@ -175,12 +175,12 @@ make down                     # stop (keeps data); `make clean` also deletes all
 |---|---|
 | `make up` | Seven containers listed by `docker compose ps`, all `(healthy)` |
 | `make init` | Three topics with `PartitionCount: 3`; `bucket ezyshop-lake created` (or `already exists`); `Postgres seeded: suppliers=20 products=200 inventory=200 campaigns=76` |
-| `make backfill` | `generated 646,654 orders and 44,096 reviews (… 18 months …)`, then `bronze/orders: … rejected=0` |
+| `make backfill` | `generated ~646,000 orders and ~44,000 reviews (… 18 months …)`, then `bronze/orders: … rejected=0` |
 | `make stream` | `speed layer: master=local[3] trigger=30s …`; Spark warnings about adaptive execution are expected |
 | `make generate` | A line every 5 s: `sent=… rate=200/s clicks=… orders=… reviews=… dup=… late=… bad=…` |
 | Dashboard | Green **✓ Fresh** badge within about a minute; KPIs and charts update every 15 s (Figure 2) |
-| `make nightly` | One line per step: `[silver] …`, `[sentiment] …`, `[forecast] … one-step accuracy …`, `[at-risk] …`, `[optimize] …`, then `nightly batch finished in ~170 s` |
-| `make erase …` | Per-table counts before/after, e.g. `bronze/orders rows before 111 after 0 …` (full output: [`docs/gdpr_erasure_demo.txt`](docs/gdpr_erasure_demo.txt)) |
+| `make nightly` | One line per step: `[silver] …`, `[sentiment] …`, `[forecast] … one-step accuracy …`, `[at-risk] …`, `[optimize] …`, then `nightly batch finished in ~200 s` |
+| `make erase …` | Per-table counts before/after, e.g. `bronze/orders rows before 112 after 0 …` (full output: [`docs/gdpr_erasure_demo.txt`](docs/gdpr_erasure_demo.txt)) |
 
 ![Marketing tab](docs/screenshots/01_marketing_live.png)
 *Figure 2. Marketing (live) tab during a run.*
@@ -237,7 +237,120 @@ Small extracts of the inputs and outputs are committed in [`sample_data/`](sampl
 
 All figures were measured on the development MacBook Pro (M3 Pro, Docker Desktop with 12 CPUs / 7.7 GiB). Raw data: [`tests/bench/results/`](tests/bench/results/). Every issue found along the way is in [`docs/TEST_LOG.md`](docs/TEST_LOG.md).
 
-⟨RESULTS SECTIONS 6.1–6.7 ARE FILLED IN FROM THE BENCHMARK RUNS⟩
+**Test environment caveat.** The Docker VM (12 vCPU, 7.65 GiB) was shared with unrelated containers using about 2 GB, and the host (6 performance + 6 efficiency cores) also ran other heavy workloads, including an Android emulator (macOS load average 6–9 during the benchmarks). Absolute numbers are therefore conservative, and run-to-run variation of about ±10% was observed.
+
+### 6.1 Summary against the case-study targets
+
+| Target (A2) | Result | Verdict |
+|---|---|---|
+| Dashboard latency ≤ 5 min | Average event visible in **26–28 s** (p50/p95) at normal load and **28–38 s** in a ×10 burst; worst event in any batch ≤ **107 s** | Met with ~3–10× headroom |
+| Forecast accuracy ≥ 90% (1 − MAPE, category × week) | GBT **93.4%**, LinearRegression 93.3%, seasonal-naive 82.0% (one-step); recursive 8-week GBT **90.5%** | Met on synthetic data (see 6.2 caveat) |
+| 10,000 TPS peak | Measured laptop capacity of the full speed layer: **5,317 events/s** on 3 cores (bronze-bound); extrapolation in 6.3 | Not reachable on a laptop; trend + extrapolation only |
+| Integrate structured + semi-structured + unstructured | Orders (nested JSON) ⨝ Postgres products (JDBC); VADER on 46,120 free-text reviews feeds the forecast and the churn score | Demonstrated |
+| GDPR pseudonymisation + erasure | Salted SHA-256 at ingestion; erasure removed 476 rows across the Delta tables (10 checked) + Mongo + Postgres; suppression stops re-ingestion; VACUUM shown to make it physical | Demonstrated and tested |
+| Reliability | Hard kill of Spark mid-batch: no loss, no duplicates, no double counting | Demonstrated (T04, T07) |
+| Personalisation +25%, cost ≤ $1.5M | Not measurable without real users / cloud deployment; resource usage recorded (6.7) | Out of scope (stated) |
+
+### 6.2 Demand forecast (batch layer)
+
+78 complete weeks per category; the last 8 weeks (2026-09-14 to 2026-11-02) are the hold-out; data as of 2026-11-10.
+
+| Category | Seasonal naive | Linear regression | **GBT (selected)** | GBT recursive 8 weeks |
+|---|---|---|---|---|
+| apparel | 77.2% | 90.4% | 90.1% | 93.8% |
+| beauty | 85.0% | 94.7% | 95.2% | 86.3% |
+| computing | 86.3% | 91.8% | 90.5% | 92.4% |
+| electronics | 78.3% | 96.0% | 93.2% | 85.1% |
+| footwear | 75.7% | 91.4% | 92.2% | 90.0% |
+| home | 80.9% | 95.0% | 95.7% | 90.8% |
+| kitchen | 88.8% | 94.6% | 94.5% | 92.8% |
+| phones | 83.8% | 92.4% | 95.9% | 93.2% |
+| **overall** | **82.0%** | **93.3%** | **93.4%** | **90.5%** |
+
+*Accuracy = 1 − MAPE (A2 Assumption 8). One-step = each test week predicted from actual history up to the previous week; recursive = predictions fed back as lags for 8 weeks (closer to how planners use a forecast).*
+
+**Interpretation.** Both ML models beat the seasonal-naive baseline by about 11 points, because the baseline ignores the 25% growth trend and the campaign calendar. GBT and LinearRegression are statistically indistinguishable here: an earlier run on the previous day's data selected LinearRegression (94.0% vs 93.8%), this run selects GBT (93.4% vs 93.3%). The recursive 8-week accuracy (90.5%) only just clears the target, and two categories (electronics 85.1%, beauty 86.3%) fall below it. **The 90% result is favourable because the synthetic demand follows a multiplicative seasonal model that the features can represent** (trend, Nov/Dec peak, Black Friday, campaign uplift, planted quality shocks). On real data, new products, stock-outs that censor demand and competitor effects would lower it, so A2's risk 4 and its countermeasures (safety stock, planner judgement) stand. MAPE also has known weaknesses near zero demand (Hyndman & Koehler, 2006), which is why category × week, not product × day, is the reported level.
+
+**Reorder signal.** For the next 4 weeks (which include Black Friday 2026), 137 of 200 products are below their reorder level (forecast demand over the supplier lead time + safety stock) and none are overstocked. A high share is expected right before the peak; after calibrating stock to demand, the share fell from 194/200 (T09).
+
+![Operations tab](docs/screenshots/02_operations.png)
+*Figure 3. Operations tab: forecast vs actual for electronics with the 8-week test window, the next 4 weeks, accuracy per category against 90%, and reorder alerts.*
+
+### 6.3 Throughput and the 10,000 TPS question
+
+**Controlled capacity test** ([`tests/bench/throughput.py`](tests/bench/throughput.py)): a fixed backlog of about 450,000 events is loaded into fresh topics *before* Spark starts, then drained with P partitions = P cores.
+
+| Partitions / cores | Live aggregation only | Full speed layer: live | Full speed layer: bronze (limiting stage) |
+|---|---|---|---|
+| 1 / `local[1]` | **12,388** ev/s | 9,315 | **3,842** |
+| 3 / `local[3]` | 9,545 | 10,180 | **5,317** (+38%) |
+| 6 / `local[6]` | 7,774 | (OOM-killed) | (OOM-killed) |
+
+![Throughput](tests/bench/results/throughput.png)
+*Figure 4. Speed-layer capacity from a fixed backlog.*
+
+**What this shows, honestly.** In the full speed layer, the bronze Delta writer (object-store commits) is the bottleneck, and it does scale with partitions: +38% from 1 to 3 cores, because each Kafka partition's slice is written in parallel. The live aggregation does **not** scale on this laptop: it gets slower with more cores. A Spark stage profile explains why: for the same 200,000 events, total task time rose from 21.2 s to 121.6 s (1 → 6 cores) while JVM CPU rose only from 6.9 s to 18.5 s. The extra tasks spend their time waiting for one Python worker each (the VADER UDF), fixed per-batch state-store commits and a host whose CPUs and memory were already contended (T11). Six task slots plus their Python workers did not fit in memory next to the bronze writer (OOM, T12). A load sweep with the generator in the same container confirmed the picture but is confounded by CPU sharing ([`load_sweep.png`](tests/bench/results/load_sweep.png)).
+
+**A laptop cannot reach 10,000 TPS, and this prototype does not claim to.** The evidence is the per-stage capacity and the fact that the limiting stage scales with partitions. Extrapolation, stating the assumptions:
+
+* Per-core capacity of the full speed layer, taken from the configuration that fitted in memory: 5,317 ev/s ÷ 3 cores ≈ **1,770 events/s per core**.
+* *Reading 1 (A2 Table 1: 10,000 events/s reach the buffer):* 10,000 ÷ 1,770 ≈ 6 cores; with 2× headroom for bursts and recovery, **≈ 12 cores** (e.g. 3 executors × 4 cores), plus a Kafka topic with ≥ 12 partitions. A2's cost model assumed 12 speed-layer *machines*; the measurement suggests that is generous for this reading.
+* *Reading 2 (10,000 orders/s, with clicks on top):* orders are about 3.3% of events in the generator, so ≈ 300,000 events/s, ≈ 170 cores, ≈ 340 cores with headroom (about 43 eight-core machines). That is within A2's separate "peak capacity: 100 machines for 10 days" line (Table B2), but it is the reading the prototype should be load-tested against before Black Friday.
+* Assumptions: stateless parsing and the bronze append scale near-linearly with partitions and executors, as Kafka consumer groups and Spark tasks parallelise per partition (Raptis et al., 2024; Armbrust et al., 2018). Stateful aggregation scales with shuffle partitions. Each executor in a cluster has its own cores, memory and network, unlike the shared laptop. Cloud object stores have higher per-request latency than local SeaweedFS, so bronze commits should be fewer and larger (longer bronze trigger) in production.
+
+**Tuning that mattered** (full list: TEST_LOG summary): `spark.sql.shuffle.partitions` = 6 instead of the default 200 gave **8,941 vs 1,512 ev/s (5.9×)** on the same backlog; bounding `maxOffsetsPerTrigger` (200k) stopped the JVM from being OOM-killed during bursts.
+
+### 6.4 End-to-end latency
+
+Production settings: 3 partitions, `local[3]`, 30-second trigger, 1-minute windows, 10-minute watermark; late-event injection off (those events are back-dated on purpose).
+
+| Phase | Offered | Batches | Newest event p50 | **Average event p50 / p95** | Oldest event in batch p95 / max | ≤ 300 s? |
+|---|---|---|---|---|---|---|
+| Normal | 200 ev/s | 12 | 6.6 s | **25.9 s / 27.8 s** | 77.1 s / 78.9 s | ✓ |
+| Burst ×10 | 2,000 ev/s | 10 | 9.0 s | **28.4 s / 38.1 s** | 95.1 s / 107.2 s | ✓ |
+
+![Latency](tests/bench/results/latency.png)
+*Figure 5. Latency per micro-batch; the shaded area is the ×10 burst.*
+
+The average event becomes visible within about half a minute, dominated by the 30-second trigger, and stays under 40 s in the burst: about **8× headroom** against the 5-minute requirement. The "oldest event" column is a worst-case upper bound and includes the generator's session model: a session's first page view is time-stamped up to tens of seconds before the session is emitted. A shorter trigger would lower latency at the cost of more, smaller commits; A2's choice of minute-level windows (§2.2.2.3) is confirmed as sufficient.
+
+### 6.5 Sentiment validation (unstructured data)
+
+VADER labels compared with a star-rating label (4–5 pos, 3 neu, 1–2 neg) on **46,120 reviews**:
+
+| Stars ↓ / VADER → | neg | neu | pos |
+|---|---|---|---|
+| **neg (1–2★)** | 5,763 | 649 | 2,125 |
+| **neu (3★)** | 3,263 | 2,657 | 6,270 |
+| **pos (4–5★)** | 1,218 | 2,157 | 22,018 |
+
+Three-class agreement **66.0%**; positive/negative-only agreement **81.9%**; Pearson r (compound vs stars) **0.637**. The weak spots are the ones a lexicon model is known for. Three-star reviews ("fine for the price") are mostly read as positive. 2,125 negative reviews scored positive, which is where the generator's sarcasm ("Great, it broke after two days") lives; a unit test documents that failure. For marketing triage and as an aggregate signal (category-week averages, churn input) this is adequate; for individual decisions a fine-tuned transformer would be the upgrade (Section 7).
+
+### 6.6 At-risk customers and GDPR erasure
+
+**At-risk** (as of 2026-11-10): 764 of 5,000 customers flagged (626 by falling purchase frequency, 188 by negative reviews, 50 by both). Scored against the churn cohort the generator planted (400 customers): **precision 0.444, recall 0.848, precision of the top 100 by score 0.83**. Marketing would work down the ranked list, so the top of the list is what matters. Thresholds were tuned on a 27-setting grid (T10).
+
+**Erasure** of customer C00042 ([`docs/gdpr_erasure_demo.txt`](docs/gdpr_erasure_demo.txt)): 476 rows deleted across 8 Delta tables (bronze, silver), with zero remaining, plus Mongo and Postgres checks and an audit record that stores no raw ID. All 476 rows were still readable through Delta time travel immediately after the DELETE. [`docs/gdpr_vacuum_demo.txt`](docs/gdpr_vacuum_demo.txt) shows that after `VACUUM` (forced to 0 hours for the demo), time travel to the pre-delete version **fails** because the Parquet files are physically gone. Erasure is therefore "DELETE now + VACUUM within the retention window", and Kafka's 24 h retention bounds the broker copy. The suppression list kept the erased customer out of 235,280 newly ingested click rows (T14). The automated test `tests/integration/test_gdpr_erasure.py` passes.
+
+### 6.7 Reliability, tests and resource usage
+
+* **Recovery** (T04, T07): the Spark container was hard-killed (`docker kill`) mid-stream twice, once between batches and once during a running job, while the generator kept producing. After restart: Kafka messages = bronze rows + quarantined rows for every topic, zero duplicate offsets, and Mongo order/view totals equal the distinct events in bronze. In the second test the in-flight batch had committed 2 of 3 bronze tables; on replay Delta skipped them and wrote only the third.
+* **Tests:** 29 unit tests (pseudonymisation, schemas and cleaning, generator, sentiment, speed-layer facts, forecast features and time-split leakage) and 3 integration tests (end-to-end stream, nightly outputs, GDPR erasure) pass. `make demo` from a fresh clone after `make clean` completed in **11 min 22 s**.
+* **Nightly batch:** 204 s end to end on 653k orders / 46k reviews (silver 49 s, sentiment 11 s, forecast 88 s, at-risk 7 s, OPTIMIZE ~16 s).
+* **Steady-state resources at 200 ev/s** (`docker stats`, 8 samples, [`docker_stats_steady_200eps.csv`](tests/bench/results/docker_stats_steady_200eps.csv)):
+
+| Service | CPU mean (max) | Memory |
+|---|---|---|
+| Spark (both streaming queries) | 189% (493%) | 2.6 GB |
+| Kafka | 11% (42%) | 463 MB |
+| SeaweedFS (object store) | 7% (19%) | 795 MB |
+| MongoDB | 4% (21%) | 181 MB |
+| Dashboard / generator / Postgres | 4% / 5% / 0% | 142 / 31 / 28 MB |
+
+For A2's cost model: the speed layer at 200 ev/s needs about two cores and 2.6 GB on average, so compute scales with event rate per §6.3; storage and serving are minor at this volume.
+
+![Pipeline tab](docs/screenshots/04_pipeline.png)
+*Figure 6. Pipeline tab: latency per micro-batch, events per batch (the burst is the 60k peak), nightly step timings.*
 
 ---
 
@@ -249,19 +362,20 @@ Each decision below gives the alternative considered, why this option was chosen
 |---|---|---|---|---|
 | **Lambda** (speed + batch) | Kappa: one streaming path, history replayed from the log (Lin, 2017; Maatallah et al., 2025) | The forecast needs 18+ months of history with features such as lag-52; the dashboard needs minutes. One engine (Spark) for both keeps the duplicated logic small | Two code paths must agree (e.g. how an order counts per category) | Shared parsing (`src/common/bronze.py`) and sentiment code; streaming revenue reconciles with bronze (Section 6.4) |
 | **Kafka** | RabbitMQ (queue, messages deleted on consumption); Amazon Kinesis (managed, shard limits, AWS-only) | A replayable, partitioned log is what makes checkpoint recovery and re-processing possible (Wang et al., 2015); open source avoids lock-in (A2 risk 5); managed options (MSK, Confluent) exist | Operating Kafka well needs skills (A2 risk 6) → use a managed service in production | Hard kill of Spark mid-batch: no loss, because Spark re-read the uncommitted offsets from Kafka (T07) |
-| **Spark** for both paths | Apache Flink (true streaming, millisecond latency) | One API and engine for SQL, streaming and ML (Zaharia et al., 2016) means fewer skills and less glue for a small team (A2 §2.2.1). The requirement is 5 minutes, not 5 ms | Micro-batch latency is seconds, not milliseconds; Flink would be the upgrade path if sub-second use cases appear (Vogel et al., 2024) | Average-event latency far below 300 s (Section 6.3) |
+| **Spark** for both paths | Apache Flink (true streaming, millisecond latency) | One API and engine for SQL, streaming and ML (Zaharia et al., 2016) means fewer skills and less glue for a small team (A2 §2.2.1). The requirement is 5 minutes, not 5 ms | Micro-batch latency is seconds, not milliseconds; Flink would be the upgrade path if sub-second use cases appear (Vogel et al., 2024) | Average-event latency 26–38 s against 300 s (Section 6.4) |
 | **Delta Lake** on Parquet | Plain Parquet (no transactions); Apache Iceberg; Apache Hudi (Jain et al., 2023) | ACID appends from two writers, DELETE for erasure, `txnAppId` idempotent streaming writes and time travel (Armbrust et al., 2020). Iceberg is equally capable and more engine-neutral; Delta was chosen for its tight Spark integration and A2 continuity | Ecosystem tilt towards Spark/Databricks; Iceberg remains a viable migration (open Parquet underneath) | DELETE of one customer across 10 tables (6.6); replayed partial batch skipped by Delta (T07); OPTIMIZE 72 → 1 files (T08) |
 | **Object storage** (S3 API) | HDFS on a self-run Hadoop cluster | Storage and compute scale and are paid for separately; nearly 2 PB in 3 years needs tiering, not servers running only to hold disks (A2 §2.2.1; A. Q. Khan et al., 2024) | Higher per-request latency than local disks; eventual listing semantics needed Delta's log | Six Delta commits per micro-batch made the bronze query the bottleneck (T05/T11): object-store latency is real |
-| **MongoDB** serving store | Cassandra (write-optimised wide-column; Lakshman & Malik, 2010); Redis (in-memory cache) | Documents fit the dashboard's read shapes (one window per category, one forecast per category with arrays); flexible schema; upsert on `_id` gives idempotent sinks | Weaker multi-document consistency (Ferreira et al., 2025), so orders stay in PostgreSQL (A2 §2.2.1); Cassandra would scale writes further | Bulk upsert of about 45 documents per batch in 15–45 ms (pipeline metrics) |
+| **MongoDB** serving store | Cassandra (write-optimised wide-column; Lakshman & Malik, 2010); Redis (in-memory cache) | Documents fit the dashboard's read shapes (one window per category, one forecast per category with arrays); flexible schema; upsert on `_id` gives idempotent sinks | Weaker multi-document consistency (Ferreira et al., 2025), so orders stay in PostgreSQL (A2 §2.2.1); Cassandra would scale writes further | Bulk upserts of about 45 window documents per batch in tens of milliseconds (15–69 ms observed) |
 | **foreachBatch + pymongo** | MongoDB Spark Connector | No extra jar or version matrix to maintain; explicit control of idempotent `$set` upserts and of latency metrics | Collects aggregates to the driver: fine for window aggregates (tens of rows per batch), wrong for raw events | Restart tests show no double counting (T04, T07) |
-| **VADER** sentiment | Transformer models such as BERT (Devlin et al., 2019) | No training data, no GPU, tens of thousands of reviews per second in a pandas UDF, and every score is explainable to marketing (Hutto & Gilbert, 2014) | Misreads sarcasm and mixed reviews: 65.5% three-class agreement with stars (6.5). A fine-tuned transformer would raise accuracy at much higher compute cost | Unit test documents the sarcasm failure; validation against stars |
-| **GBT / LinearRegression** (MLlib) at category × week | ARIMA (Hyndman & Athanasopoulos, 2021); Prophet (Taylor & Letham, 2018) | One global model across categories, with exogenous features (campaigns, sentiment, Black Friday) inside the same distributed pipeline; ARIMA/Prophet are per-series and run outside Spark | Trees cannot extrapolate beyond the training range, hence the ratio-to-rolling-mean target; few Black Friday examples | Both models beat the seasonal-naive baseline by more than 10 points (6.2) |
+| **VADER** sentiment | Transformer models such as BERT (Devlin et al., 2019) | No training data, no GPU, tens of thousands of reviews per second in a pandas UDF, and every score is explainable to marketing (Hutto & Gilbert, 2014) | Misreads sarcasm and mixed reviews: 66.0% three-class agreement with stars (6.5). A fine-tuned transformer would raise accuracy at much higher compute cost | Unit test documents the sarcasm failure; validation against stars |
+| **GBT / LinearRegression** (MLlib) at category × week | ARIMA (Hyndman & Athanasopoulos, 2021); Prophet (Taylor & Letham, 2018) | One global model across categories, with exogenous features (campaigns, sentiment, Black Friday) inside the same distributed pipeline; ARIMA/Prophet are per-series and run outside Spark | Trees cannot extrapolate beyond the training range, hence the ratio-to-rolling-mean target; few Black Friday examples | Both models beat the seasonal-naive baseline by about 11 points; GBT and LR within 0.2 points of each other (6.2) |
 | **Managed services in production** | In-house Hadoop | Small team, predictable cost (Dziubak, 2023; A2) | Unit price, less control | Resource figures (6.7) feed the A2 cost model |
 
 **Critical reflections.**
 
-* *Was Lambda over-engineered?* At prototype scale the batch layer recomputes silver in full every night (≈ 55 s for 650k orders). At 1 TB/day that would be the first thing to change, to incremental MERGE on `event_id`, and a Kappa design that replays Kafka would struggle with 18 months of history at 24-hour retention. So the second path earns its keep for the forecast.
-* *Micro-batching moved the bottleneck to storage, not compute.* The live aggregation finished in 5–9 s per batch, but the bronze writer spent 15–20 s committing to object storage (T05). In production this argues for fewer, larger commits (a longer bronze trigger than the live trigger) and for writing bronze from a separate streaming job.
+* *Was Lambda over-engineered?* At prototype scale the batch layer recomputes silver in full every night (≈ 49 s for 653k orders). At 1 TB/day that would be the first thing to change, to incremental MERGE on `event_id`, and a Kappa design that replays Kafka would struggle with 18 months of history at 24-hour retention. So the second path earns its keep for the forecast.
+* *Micro-batching moved the bottleneck to storage, not compute.* Live aggregation alone drained about 12,000 ev/s on one core, but the bronze writer only 3,800–5,300 ev/s because each batch makes six Delta commits to object storage (T05, T11). In production this argues for fewer, larger commits (a longer bronze trigger than the live trigger) and for writing bronze from a separate streaming job.
+* *More cores are not automatically more throughput.* On one shared laptop, extra Spark task slots made the live query slower (task time 21 s → 122 s for the same work) and pushed memory over the limit (T11, T12). Distributed systems scale by adding machines with their own resources; the prototype measures the per-core building block, not the cluster.
 * *The 90% target is met on synthetic data that follows a multiplicative seasonal model the features can represent.* Real demand has new products, stock-outs that censor sales, and competitor effects; A2's risk 4 stands (Section 8).
 
 ---
@@ -277,14 +391,36 @@ Each decision below gives the alternative considered, why this option was chosen
 | No real users | +25% personalisation cannot be measured; recommendations not implemented | KPI table (A2 Table 4) baseline still required |
 | Cost not measured in the cloud | Resource usage is recorded (6.7) but prices are A2's assumptions | Risk 2 (cost overrun) |
 | Erasure relies on VACUUM within the retention window; Kafka keeps data for 24 h | Erasure is complete only after VACUUM and topic retention; time travel cannot reach back past an erasure | Risk 1 (privacy) |
-| Open-source stack run by a small team | Prototype setup alone hit 13 integration issues (TEST_LOG) | Risk 6 (skills): supports A2's managed-services recommendation |
+| Open-source stack run by a small team | Prototype setup alone hit 14 logged issues, including two JVM OOM kills and an image no longer being published (TEST_LOG) | Risk 6 (skills): supports A2's managed-services recommendation |
 | Spark/Delta ecosystem | Delta favours Spark; migrating to Iceberg is possible but not free | Risk 5 (lock-in): open Parquet underneath keeps the exit open |
 
 ---
 
 ## 9. Conclusion
 
-⟨CONCLUSION WRITTEN AFTER RESULTS⟩
+**Expected outcomes for EzyShop.** The prototype validates the core of the A2 design on its four business problems:
+
+* *Black Friday outages:* Kafka turned a ×10 burst into larger micro-batches instead of failures; nothing was lost even when Spark was killed mid-batch.
+* *No current view of customers:* marketing sees revenue, conversion and review sentiment about **30 seconds** after the events happen, against a 5-minute requirement.
+* *Overstock and shortage:* a category forecast at **93% one-step / 90.5% recursive** accuracy on synthetic data, about 11 points better than "same week last year", drives reorder alerts tied to supplier lead times.
+* *12% retention loss:* integrating free-text reviews with purchase history gives a ranked, explainable at-risk list (top-100 precision 0.83 on planted churners).
+
+All of this runs on pseudonymised data with a tested erasure path. The prototype also refined A2's assumptions:
+
+* the storage-commit path, not compute, limits the speed layer;
+* the 12-machine speed-layer estimate is generous if "10,000 TPS" means events, and too small if it means orders;
+* operating this stack hit 14 non-trivial issues even at laptop scale, which supports A2's managed-services recommendation (risk 6).
+
+**What it cannot prove:** 10,000 TPS on real infrastructure, EzyShop's real forecast accuracy, the +25% personalisation uplift, or real cloud cost.
+
+**Concrete improvements (next steps):**
+
+1. **Load test at scale** on managed Kafka (MSK or Confluent) and Databricks/EMR with auto-scaling, using reading 2 of the TPS target (§6.3), before the next Black Friday; give bronze its own job with a longer trigger.
+2. **Incremental batch:** replace nightly full rebuilds of silver with `MERGE` on `event_id`; add CDC (Debezium) from PostgreSQL instead of JDBC snapshots.
+3. **Kappa migration path:** if streaming proves sufficient, keep one Structured Streaming codebase and rebuild history by replaying bronze (not Kafka) through it; move to Flink only if sub-second use cases appear.
+4. **Personalisation (+25%):** ALS collaborative filtering in Spark MLlib on clicks + purchases + sentiment, served from MongoDB, measured with an A/B test against a baseline recommendation click-through rate (A2 Table 4).
+5. **Better NLP:** a fine-tuned transformer for review sentiment (or VADER plus a sarcasm/mixed-review classifier), batch-scored on GPU.
+6. **Platform engineering:** a feature store for forecast/churn features; Airflow (or Databricks Workflows) for orchestration; a schema registry (Avro/Protobuf) for event contracts; CI/CD running `make test` and the smoke test; Terraform for infrastructure as code; budget alerts and cost dashboards (A2 risk 2); scheduled `VACUUM` with an erasure SLA.
 
 ---
 

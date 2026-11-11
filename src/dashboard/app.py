@@ -269,6 +269,8 @@ def pipeline():
     if prog.empty:
         st.info("No streaming progress in the last 2 hours.")
     else:
+        # MongoDB returns naive UTC datetimes; make them tz-aware before comparing with now()
+        prog["ts"] = pd.to_datetime(prog["ts"], utc=True)
         live = prog[prog["query"] == "live_metrics"].sort_values("ts")
         recent = live[live.ts >= now() - dt.timedelta(minutes=30)]
         k1, k2, k3, k4 = st.columns(4)

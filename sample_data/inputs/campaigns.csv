@@ -1,0 +1,77 @@
+campaign_id,name,channel,category,start_date,end_date,discount_pct
+CMP0001,Footwear promo Jan 2025,display,footwear,2025-01-08,2025-01-16,25.0
+CMP0002,Phones promo Jan 2025,display,phones,2025-01-21,2025-01-29,20.0
+CMP0003,Computing promo Jan 2025,email,computing,2025-01-12,2025-01-20,10.0
+CMP0004,Phones promo Feb 2025,search,phones,2025-02-12,2025-02-15,10.0
+CMP0005,Computing promo Feb 2025,display,computing,2025-02-18,2025-02-27,20.0
+CMP0006,Kitchen promo Feb 2025,affiliate,kitchen,2025-02-10,2025-02-13,15.0
+CMP0007,Storewide promo Mar 2025,display,,2025-03-02,2025-03-05,10.0
+CMP0008,Storewide promo Mar 2025,email,,2025-03-13,2025-03-16,20.0
+CMP0009,Beauty promo Apr 2025,email,beauty,2025-04-18,2025-04-25,20.0
+CMP0010,Phones promo May 2025,display,phones,2025-05-19,2025-05-24,15.0
+CMP0011,Kitchen promo Jun 2025,email,kitchen,2025-06-18,2025-06-27,25.0
+CMP0012,Footwear promo Jun 2025,display,footwear,2025-06-19,2025-06-23,5.0
+CMP0013,Apparel promo Jul 2025,affiliate,apparel,2025-07-06,2025-07-10,25.0
+CMP0014,Computing promo Aug 2025,display,computing,2025-08-24,2025-08-30,20.0
+CMP0015,Beauty promo Aug 2025,search,beauty,2025-08-10,2025-08-18,15.0
+CMP0016,Beauty promo Sep 2025,search,beauty,2025-09-21,2025-09-25,5.0
+CMP0017,Apparel promo Sep 2025,email,apparel,2025-09-22,2025-09-26,10.0
+CMP0018,Kitchen promo Oct 2025,social,kitchen,2025-10-24,2025-10-27,5.0
+CMP0019,Phones promo Nov 2025,display,phones,2025-11-17,2025-11-26,25.0
+CMP0020,Phones promo Nov 2025,social,phones,2025-11-23,2025-11-26,15.0
+CMP0021,Home promo Dec 2025,email,home,2025-12-22,2025-12-28,20.0
+CMP0022,Storewide promo Dec 2025,social,,2025-12-11,2025-12-17,5.0
+CMP0023,Beauty promo Jan 2026,social,beauty,2026-01-05,2026-01-08,20.0
+CMP0024,Beauty promo Feb 2026,display,beauty,2026-02-10,2026-02-18,10.0
+CMP0025,Beauty promo Feb 2026,email,beauty,2026-02-02,2026-02-10,10.0
+CMP0026,Home promo Mar 2026,email,home,2026-03-01,2026-03-08,20.0
+CMP0027,Electronics promo Apr 2026,social,electronics,2026-04-08,2026-04-16,25.0
+CMP0028,Home promo Apr 2026,email,home,2026-04-10,2026-04-17,25.0
+CMP0029,Kitchen promo Apr 2026,affiliate,kitchen,2026-04-24,2026-04-30,10.0
+CMP0030,Beauty promo May 2026,display,beauty,2026-05-12,2026-05-19,15.0
+CMP0031,Home promo May 2026,display,home,2026-05-04,2026-05-13,20.0
+CMP0032,Phones promo Jun 2026,social,phones,2026-06-04,2026-06-07,20.0
+CMP0033,Beauty promo Jul 2026,affiliate,beauty,2026-07-08,2026-07-16,20.0
+CMP0034,Storewide promo Jul 2026,display,,2026-07-09,2026-07-13,20.0
+CMP0035,Computing promo Aug 2026,display,computing,2026-08-04,2026-08-07,10.0
+CMP0036,Apparel promo Sep 2026,email,apparel,2026-09-19,2026-09-23,15.0
+CMP0037,Footwear promo Sep 2026,social,footwear,2026-09-24,2026-10-01,20.0
+CMP0038,Phones promo Sep 2026,affiliate,phones,2026-09-03,2026-09-06,25.0
+CMP0039,Apparel promo Oct 2026,display,apparel,2026-10-23,2026-10-25,10.0
+CMP0040,Computing promo Nov 2026,social,computing,2026-11-04,2026-11-08,10.0
+CMP0041,Phones promo Nov 2026,affiliate,phones,2026-11-01,2026-11-10,15.0
+CMP0042,Apparel promo Nov 2026,affiliate,apparel,2026-11-06,2026-11-13,25.0
+CMP0043,Kitchen promo Dec 2026,email,kitchen,2026-12-12,2026-12-17,10.0
+CMP0044,Beauty promo Dec 2026,social,beauty,2026-12-11,2026-12-13,5.0
+CMP0045,Kitchen promo Dec 2026,affiliate,kitchen,2026-12-05,2026-12-08,15.0
+CMP0046,Electronics promo Jan 2027,search,electronics,2027-01-24,2027-01-29,20.0
+CMP0047,Footwear promo Jan 2027,affiliate,footwear,2027-01-22,2027-01-24,5.0
+CMP0048,Footwear promo Feb 2027,search,footwear,2027-02-18,2027-02-23,10.0
+CMP0049,Storewide promo Mar 2027,email,,2027-03-01,2027-03-04,5.0
+CMP0050,Storewide promo Apr 2027,display,,2027-04-20,2027-04-27,20.0
+CMP0051,Beauty promo Apr 2027,search,beauty,2027-04-21,2027-04-23,20.0
+CMP0052,Phones promo May 2027,email,phones,2027-05-06,2027-05-11,20.0
+CMP0053,Electronics promo Jun 2027,social,electronics,2027-06-09,2027-06-13,25.0
+CMP0054,Electronics promo Jun 2027,email,electronics,2027-06-17,2027-06-25,10.0
+CMP0055,Storewide promo Jul 2027,search,,2027-07-03,2027-07-12,20.0
+CMP0056,Phones promo Jul 2027,social,phones,2027-07-02,2027-07-07,15.0
+CMP0057,Kitchen promo Jul 2027,email,kitchen,2027-07-07,2027-07-11,25.0
+CMP0058,Computing promo Aug 2027,search,computing,2027-08-08,2027-08-11,5.0
+CMP0059,Computing promo Sep 2027,display,computing,2027-09-24,2027-09-26,20.0
+CMP0060,Storewide promo Sep 2027,display,,2027-09-19,2027-09-28,15.0
+CMP0061,Apparel promo Oct 2027,display,apparel,2027-10-01,2027-10-03,20.0
+CMP0062,Footwear promo Oct 2027,social,footwear,2027-10-11,2027-10-20,10.0
+CMP0063,Home promo Nov 2027,search,home,2027-11-15,2027-11-21,20.0
+CMP0064,Footwear promo Nov 2027,social,footwear,2027-11-20,2027-11-24,10.0
+CMP0065,Storewide promo Dec 2027,social,,2027-12-25,2028-01-01,25.0
+CMP0066,Phones promo Dec 2027,affiliate,phones,2027-12-15,2027-12-19,10.0
+CMP0067,Beauty promo Dec 2027,display,beauty,2027-12-01,2027-12-03,15.0
+CMP0068,Black Friday 2025,email,,2025-11-25,2025-12-01,30.0
+CMP0069,Boxing Day 2025,email,,2025-12-26,2025-12-31,25.0
+CMP0070,EOFY Sale 2025,email,,2025-06-15,2025-06-30,20.0
+CMP0071,Black Friday 2026,email,,2026-11-24,2026-11-30,30.0
+CMP0072,Boxing Day 2026,email,,2026-12-26,2026-12-31,25.0
+CMP0073,EOFY Sale 2026,email,,2026-06-15,2026-06-30,20.0
+CMP0074,Black Friday 2027,email,,2027-11-23,2027-11-29,30.0
+CMP0075,Boxing Day 2027,email,,2027-12-26,2027-12-31,25.0
+CMP0076,EOFY Sale 2027,email,,2027-06-15,2027-06-30,20.0
