@@ -21,3 +21,7 @@ derby.log
 
 # node (only used to render the diagram)
 node_modules/
+
+# local build spec (kept out of the repo)
+INSTRUCTIONS.md
+report/
