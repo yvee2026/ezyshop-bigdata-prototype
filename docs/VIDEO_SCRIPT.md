@@ -23,7 +23,7 @@ Speaker notes are written to be read almost verbatim at a calm pace (about 140 w
 
 **On screen:** title slide → problem slide (silos diagram, three Vs with numbers).
 
-> Hello, I'm ⟨name⟩. This is my DAT801A Assessment 3 prototype, which builds on our Assessment 2 report for EzyShop.
+> Hello, I'm Yvonne Kinoti. This is my DAT801A Assessment 3 prototype, which builds on our Assessment 2 report for EzyShop.
 >
 > EzyShop is a mid-sized online retailer. It runs everything on one relational database, with purchases, web clicks, reviews, inventory and campaigns in five separate silos. The case study names four consequences: customer retention fell twelve percent in six months; marketing can't see current customer behaviour; the system fails at the ten thousand transactions per second of Black Friday; and the warehouse swings between overstock and shortage.
 >

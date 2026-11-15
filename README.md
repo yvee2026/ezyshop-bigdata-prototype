@@ -1,7 +1,8 @@
 # EzyShop Big Data Prototype: Real-Time Customer Analytics and Demand Forecasting
 
 > **DAT801A Big Data Architecture and Management · Assessment 3: Big Data Prototype**
-> Author: **⟨AUTHOR NAME(S) — to be completed before submission⟩**
+> Author: **Yvonne Mwendwa Kinoti**  
+> Repository: https://github.com/yvee2026/ezyshop-bigdata-prototype
 > Lecturer: Farshid Hajati
 > Builds on the Assessment 2 report *EzyShop: Enhancing Customer Experience with Big Data* (Köberlein & Kinoti, 2026), cited here as "A2". This repository implements A2's Recommendation 5: *"validate assumptions with a small prototype."*
 
