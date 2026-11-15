@@ -25,3 +25,5 @@ node_modules/
 # local build spec (kept out of the repo)
 INSTRUCTIONS.md
 report/
+docs/VIDEO_SCRIPT.md
+slides/
