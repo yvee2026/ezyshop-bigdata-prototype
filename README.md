@@ -20,7 +20,6 @@
 8. [Limitations and risks](#8-limitations-and-risks)
 9. [Conclusion](#9-conclusion)
 10. [References](#10-references)
-11. [Use of AI declaration](#11-use-of-ai-declaration)
 
 ---
 
