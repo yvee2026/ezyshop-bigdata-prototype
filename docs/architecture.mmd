@@ -1,55 +1,49 @@
 %% EzyShop Big Data prototype: Lambda architecture (render: make diagram)
-%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#f9f9f7", "primaryBorderColor": "#898781", "primaryTextColor": "#0b0b0b", "lineColor": "#52514e", "clusterBkg": "#fcfcfb", "clusterBorder": "#c3c2b7", "edgeLabelBackground": "#ffffff"}}}%%
-flowchart LR
-  subgraph SRC["SOURCES"]
-    G1["Generator: clicks<br/>(semi-structured JSON)"]
-    G2["Generator: orders<br/>(nested JSON)"]
-    G3["Generator: reviews<br/>(free text)"]
-    PG[("PostgreSQL 16<br/>system of record<br/>products · inventory<br/>suppliers · campaigns · orders")]
+%% Top to bottom so it stays readable at A4 page width; no nested groups (Mermaid
+%% overlaps groups whose nodes link outside them).
+%%{init: {"theme": "base", "flowchart": {"nodeSpacing": 36, "rankSpacing": 48, "padding": 14, "wrappingWidth": 460}, "themeVariables": {"primaryColor": "#ffffff", "primaryBorderColor": "#898781", "primaryTextColor": "#0b0b0b", "lineColor": "#52514e", "clusterBkg": "#f6f6f4", "clusterBorder": "#c3c2b7", "edgeLabelBackground": "#ffffff", "fontSize": "16px"}}}%%
+flowchart TB
+  subgraph SRC["SOURCES (generator)"]
+    G1["<b>Clicks</b><br/>semi-structured JSON"]
+    G2["<b>Orders</b><br/>nested JSON line items"]
+    G3["<b>Reviews</b><br/>unstructured free text"]
   end
+  PG[("<b>PostgreSQL 16</b><br/>system of record: products,<br/>inventory, suppliers, campaigns")]
 
-  subgraph ING["INGESTION"]
-    K[["Apache Kafka 3.8 (KRaft)<br/>topics: clicks · orders · reviews<br/>3 partitions, key = customer_pid"]]
-  end
+  K[["<b>Apache Kafka 3.8 (KRaft)</b><br/>3 topics × 3 partitions, keyed by pseudonymised customer ID"]]
 
-  subgraph PROC["PROCESSING · Apache Spark 3.5"]
-    SP["SPEED LAYER<br/>Structured Streaming<br/>watermark 10 min · dedup<br/>1-min windows · VADER"]
-    BA["BATCH LAYER (nightly)<br/>bronze → silver → gold<br/>VADER sentiment · MLlib GBT/LR forecast<br/>at-risk · OPTIMIZE / Z-ORDER"]
-  end
+  SP["<b>Speed layer</b> · Spark Structured Streaming<br/>30 s trigger · 10-min watermark · dedup on event_id<br/>1-min windows per category · live VADER sentiment"]
 
-  subgraph LAKE["DATA LAKE · S3 object storage (SeaweedFS locally)"]
-    BR[("bronze<br/>raw events<br/>+ _quarantine")]
-    SI[("silver<br/>deduped · typed<br/>joined to products")]
-    GO[("gold<br/>sales · sentiment<br/>features · forecast<br/>at-risk · reorder")]
-  end
+  BR[("<b>Delta Lake: bronze</b><br/>raw events + quarantine (S3 object storage)")]
 
-  subgraph SERVE["SERVING"]
-    M[("MongoDB 7<br/>live_metrics · live_sentiment<br/>forecasts · reorder_alerts<br/>review_sentiment · at_risk<br/>pipeline_metrics")]
-  end
+  BA["<b>Batch layer</b> · nightly Spark + MLlib<br/>dedup · explode orders · join products (JDBC)<br/>VADER sentiment · GBT/LR forecast · at-risk score<br/>OPTIMIZE / Z-ORDER"]
 
-  subgraph USERS["USERS"]
-    D["Streamlit dashboard<br/>Marketing (live) · Operations<br/>Customers · Pipeline"]
-  end
+  SI[("<b>Delta Lake: silver</b><br/>clean, typed, joined")]
+  GO[("<b>Delta Lake: gold</b><br/>sales · sentiment · forecast<br/>reorder · at-risk")]
+
+  M[("<b>MongoDB 7</b> · serving store<br/>live metrics · live sentiment · forecasts<br/>reorder alerts · at-risk customers · pipeline metrics")]
+
+  D["<b>Streamlit dashboard</b><br/>Marketing (live) · Operations · Customers · Pipeline"]
+
+  X["<b>Cross-cutting, every layer</b><br/>salted SHA-256 pseudonyms at ingestion · GDPR erasure (DELETE + VACUUM, suppression list)<br/>checkpoints · idempotent sinks · health checks · .env configuration"]
 
   G1 --> K
   G2 --> K
   G3 --> K
   K --> SP
-  SP -- "Query A: append (txn-idempotent)" --> BR
-  SP -- "Query B: bulk upsert on _id" --> M
-  BR --> BA
-  PG -- "JDBC snapshot (batch import / CDC)" --> BA
-  BA --> SI --> GO
-  BA -- "replace nightly" --> M
+  SP -- "append raw events" --> BR
+  SP -- "upsert 1-min windows" --> M
+  BR -- "nightly read" --> BA
+  PG -- "JDBC snapshot" --> BA
+  BA -- "writes" --> SI
+  BA -- "writes" --> GO
+  BA -- "replace nightly results" --> M
   M --> D
+  D ~~~ X
 
-  X["<b>CROSS-CUTTING</b><br/>salted SHA-256 pseudonymisation at ingestion<br/>GDPR erasure: Delta DELETE + VACUUM, suppression list<br/>checkpoints · Delta ACID · idempotent sinks<br/>health checks · .env config · metrics listener"]
-
-  classDef speed fill:#fdf1e8,stroke:#eb6834,color:#0b0b0b;
-  classDef batch fill:#e8f6ef,stroke:#1baf7a,color:#0b0b0b;
-  classDef store fill:#eef4fc,stroke:#2a78d6,color:#0b0b0b;
+  classDef layer fill:#e8f0fb,stroke:#2a78d6,stroke-width:2px,color:#0b0b0b;
+  classDef store fill:#ffffff,stroke:#898781,color:#0b0b0b;
   classDef cross fill:#f0efec,stroke:#898781,color:#0b0b0b;
-  class SP speed;
-  class BA batch;
+  class SP,BA layer;
   class BR,SI,GO,M,PG store;
   class X cross;
